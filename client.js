@@ -271,9 +271,11 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
 }
 
 /* ---------- background switcher UI ---------- */
+/* 定位在聊天列左下角（侧栏宽 280px + 16px 边距），避开 DSH 底部设置按钮
+   （侧栏底部 8,856 264x34）与居中输入框 */
 .ds-crystal-ui {
   position: fixed;
-  left: 16px;
+  left: 296px;
   bottom: 16px;
   z-index: 10000;
   font-family: var(--dsw-font-family);
