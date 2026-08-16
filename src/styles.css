@@ -274,11 +274,12 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
   color: var(--dsw-alias-label-primary);
   font-size: 18px;
   line-height: 1;
-  cursor: pointer;
+  cursor: grab;
   box-shadow: var(--dsw-shadow-lv2);
+  touch-action: none;
 }
-.ds-crystal-btn:hover {
-  background: var(--dsw-alias-interactive-bg-hover-solid);
+.ds-crystal-btn:active {
+  cursor: grabbing;
 }
 .ds-crystal-panel {
   position: absolute;
@@ -299,6 +300,10 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
 }
 .ds-crystal-panel.open {
   display: block;
+}
+.ds-crystal-panel.down {
+  bottom: auto;
+  top: 48px;
 }
 .ds-crystal-title {
   font-weight: 600;

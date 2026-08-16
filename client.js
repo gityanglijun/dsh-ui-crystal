@@ -289,11 +289,12 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
   color: var(--dsw-alias-label-primary);
   font-size: 18px;
   line-height: 1;
-  cursor: pointer;
+  cursor: grab;
   box-shadow: var(--dsw-shadow-lv2);
+  touch-action: none;
 }
-.ds-crystal-btn:hover {
-  background: var(--dsw-alias-interactive-bg-hover-solid);
+.ds-crystal-btn:active {
+  cursor: grabbing;
 }
 .ds-crystal-panel {
   position: absolute;
@@ -314,6 +315,10 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
 }
 .ds-crystal-panel.open {
   display: block;
+}
+.ds-crystal-panel.down {
+  bottom: auto;
+  top: 48px;
 }
 .ds-crystal-title {
   font-weight: 600;
@@ -448,10 +453,39 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		var btn = document.createElement("button");
 		btn.className = "ds-crystal-btn";
 		btn.textContent = "🎨";
-		btn.title = "切换背景";
+		btn.title = "切换背景（按住可拖动）";
 		var panel = document.createElement("div");
 		panel.className = "ds-crystal-panel";
-		btn.addEventListener("click", function () { panel.classList.toggle("open"); });
+		// draggable: pointer events (mouse + touch), position persisted
+		var dragMoved = false;
+		btn.addEventListener("pointerdown", function (e) {
+			var r = ui.getBoundingClientRect();
+			btn._dx = e.clientX - r.left;
+			btn._dy = e.clientY - r.top;
+			btn._sx = e.clientX;
+			btn._sy = e.clientY;
+			try { btn.setPointerCapture(e.pointerId); } catch (e4) {}
+		});
+		btn.addEventListener("pointermove", function (e) {
+			if (btn._sx === undefined) return;
+			var nx = e.clientX - btn._dx;
+			var ny = e.clientY - btn._dy;
+			nx = Math.max(4, Math.min(nx, window.innerWidth - 44));
+			ny = Math.max(4, Math.min(ny, window.innerHeight - 44));
+			ui.style.left = nx + "px";
+			ui.style.top = ny + "px";
+			ui.style.bottom = "auto";
+		});
+		btn.addEventListener("pointerup", function (e) {
+			if (btn._sx !== undefined && Math.abs(e.clientX - btn._sx) + Math.abs(e.clientY - btn._sy) > 5) dragMoved = true;
+			btn._sx = undefined;
+			try { localStorage.setItem("ds-crystal-pos", JSON.stringify({ x: parseFloat(ui.style.left), y: parseFloat(ui.style.top) })); } catch (e5) {}
+		});
+		btn.addEventListener("click", function () {
+			if (dragMoved) { dragMoved = false; return; }
+			panel.classList.toggle("open");
+			if (panel.classList.contains("open")) panel.classList.toggle("down", ui.getBoundingClientRect().top < 260);
+		});
 		var title = document.createElement("div");
 		title.className = "ds-crystal-title";
 		title.textContent = "内置背景";
@@ -557,6 +591,15 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		ui.appendChild(btn);
 		ui.appendChild(panel);
 		document.body.appendChild(ui);
+		// restore saved position
+		try {
+			var pos = JSON.parse(localStorage.getItem("ds-crystal-pos") || "null");
+			if (pos && typeof pos.x === "number" && typeof pos.y === "number") {
+				ui.style.left = pos.x + "px";
+				ui.style.top = pos.y + "px";
+				ui.style.bottom = "auto";
+			}
+		} catch (e6) {}
 		applyState();
 		// Cordis plugin shape: the loader applies the entry's exports, so even a
 		// pure-CSS client plugin must expose apply. Injection already happened
