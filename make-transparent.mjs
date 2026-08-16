@@ -91,7 +91,53 @@ function processImage(raw, info) {
   }
 
   const removed = whitePx.reduce((a, v) => a + (v === 255 ? 1 : 0), 0);
+  removeCornerWatermarks(data, info);
   return { removed, total: n };
+}
+
+/**
+ * Remove small opaque blobs in the bottom-right corner — platform watermarks
+ * are tiny detached text components there, while the character is one large
+ * component (or medium detached parts outside the corner region). A blob is
+ * removed when its bbox starts in the corner region (x > 0.5W, y > 0.85H)
+ * and its size is below 2% of the image.
+ */
+function removeCornerWatermarks(data, info) {
+  const ch = info.channels;
+  const W = info.width, H = info.height;
+  const n = W * H;
+  const SMALL = n * 0.02;
+  const label = new Int32Array(n).fill(-1);
+  const stack = new Int32Array(n);
+  for (let p = 0; p < n; p++) {
+    if (label[p] !== -1 || data[p * ch + 3] < 40) continue;
+    let top = 0;
+    stack[top++] = p;
+    label[p] = p; // use the seed pixel as the component id
+    let size = 0, minX = W, minY = H;
+    while (top > 0) {
+      const q = stack[--top];
+      const x = q % W, y = (q / W) | 0;
+      size++;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      for (const r of [q - 1, q + 1, q - W, q + W]) {
+        if (r < 0 || r >= n) continue;
+        const rx = r % W, ry = (r / W) | 0;
+        if (Math.abs(rx - x) > 1 || Math.abs(ry - y) > 1) continue;
+        if (label[r] === -1 && data[r * ch + 3] >= 40) {
+          label[r] = p;
+          stack[top++] = r;
+        }
+      }
+    }
+    if (size < SMALL && minX > W * 0.5 && minY > H * 0.85) {
+      // clear this component (re-walk with the label id)
+      for (let q = 0; q < n; q++) {
+        if (label[q] === p) data[q * ch + 3] = 0;
+      }
+    }
+  }
 }
 
 async function processFile(file) {
