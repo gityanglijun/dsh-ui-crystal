@@ -216,27 +216,15 @@ body[data-ds-dark-theme] .ds-bg-layer {
   background-size: auto 92vh;
   background-repeat: no-repeat;
 }
-/* 壁纸模式：整幅全屏，叠一层全视口径向可读性遮罩（无边缘、无面板框） */
+/* 壁纸模式：与鲸鱼娘一致，右下角自然大小展示，不全屏拉伸 */
 .ds-bg-layer[data-mode="wallpaper"] {
-  background-image:
-    radial-gradient(120% 100% at 50% 35%,
-      rgba(238, 243, 251, 0.62) 0%,
-      rgba(238, 243, 251, 0.45) 55%,
-      rgba(238, 243, 251, 0.18) 85%,
-      rgba(238, 243, 251, 0) 100%),
-    var(--ds-wall-img, none);
-  background-position: center, center;
-  background-size: cover, cover;
+  background-image: var(--ds-wall-img, none);
+  background-position: calc(100% - 6px) 100%;
+  background-size: auto 72vh;
   background-repeat: no-repeat;
 }
 body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
-  background-image:
-    radial-gradient(120% 100% at 50% 35%,
-      rgba(10, 13, 21, 0.66) 0%,
-      rgba(10, 13, 21, 0.5) 55%,
-      rgba(10, 13, 21, 0.22) 85%,
-      rgba(10, 13, 21, 0) 100%),
-    var(--ds-wall-img, none);
+  background-image: var(--ds-wall-img, none);
 }
 .ds-bg-layer[data-mode="none"] {
   background-image: none;
@@ -247,9 +235,10 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
   background: transparent !important;
 }
 
-/* small screens: shrink the whale */
+/* small screens: shrink the whale and wallpapers */
 @media (max-width: 720px) {
-  .ds-bg-layer[data-mode="whale"] {
+  .ds-bg-layer[data-mode="whale"],
+  .ds-bg-layer[data-mode="wallpaper"] {
     background-size: auto 36vh;
   }
 }
