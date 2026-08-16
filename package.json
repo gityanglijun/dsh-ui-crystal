@@ -1,0 +1,32 @@
+{
+  "name": "dsh-ui-crystal",
+  "version": "1.0.0",
+  "description": "Crystal — a polished blue-violet UI theme for the DeepSeek Harness web shell, with a DeepSeek 鲸鱼娘 (whale-girl) background. Pure-CSS client plugin.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node build.js"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "keywords": [
+    "deepseek",
+    "deepseek-harness",
+    "dsh",
+    "plugin",
+    "theme",
+    "ui",
+    "whale-girl",
+    "crystal"
+  ],
+  "license": "MIT"
+}

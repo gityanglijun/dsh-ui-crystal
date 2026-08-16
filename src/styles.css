@@ -1,0 +1,241 @@
+/* ============================================================
+   dsh-ui-crystal — Crystal theme (source stylesheet)
+   ============================================================
+   This file is the READABLE SOURCE of the theme. Run node build.js
+   to inject the whale-girl WebP assets (base64) into the two
+   WHALE_LIGHT / WHALE_DARK placeholders below and wrap the result
+   into the client bundle client.js that the DeepSeek Harness web
+   shell materializes.
+
+   Placeholders:
+     WHALE_LIGHT -> assets/whale-light.webp (40% alpha, light mode)
+     WHALE_DARK  -> assets/whale-dark.webp  (60% alpha, dark mode)
+   ============================================================ */
+
+/* ---------- typography ---------- */
+:root {
+  --dsw-font-family: "Inter", "HarmonyOS Sans SC", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ds-font-family-code: "JetBrains Mono", "Cascadia Code", "SF Mono", "Fira Code",
+    Consolas, "Liberation Mono", "PingFang SC", "Microsoft YaHei";
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(91, 140, 255, 0.28);
+}
+
+/* ---------- light theme ---------- */
+body {
+  --dsw-alias-bg-base: #eef3fb;
+  --dsw-alias-bg-layer-1: #ffffff;
+  --dsw-alias-bg-layer-2: #f8fbff;
+  --dsw-alias-button-primary-fill: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --dsw-alias-button-primary-hover: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%);
+  --dsw-alias-button-info-fill: #2563eb;
+  --dsw-alias-button-info-hover: #1d4ed8;
+  --dsw-specific-sidebar-fill: linear-gradient(180deg, #f0f5fe 0%, #e5ecfa 100%);
+  --dsw-specific-sidebar-nav-item-active: rgba(59, 130, 246, 0.18);
+  --dsw-specific-sidebar-nav-item-active-accent: rgba(59, 130, 246, 0.3);
+  --dsw-specific-sidebar-nav-item-hover: rgba(30, 41, 59, 0.06);
+  --dsw-alias-interactive-bg-hover-accent: rgba(59, 130, 246, 0.1);
+  --dsw-alias-state-business-primary: #2563eb;
+  --dsw-alias-markdown-inline-code: rgba(59, 130, 246, 0.12);
+  --dsw-shadow-lv2: 0 2px 8px rgba(30, 41, 59, 0.08), 0 8px 24px rgba(30, 41, 59, 0.08);
+  --dsw-shadow-lv3: 0 0 1px rgba(30, 41, 59, 0.1), 0 12px 32px rgba(30, 41, 59, 0.14);
+  --dsh-scrollbar-thumb: rgba(59, 130, 246, 0.45);
+  --dsh-scrollbar-thumb-hover: rgba(59, 130, 246, 0.65);
+}
+
+/* ---------- dark theme ---------- */
+body[data-ds-dark-theme] {
+  /* neutral-bluish scale → deep blue-violet */
+  --dsw-static-neutral-bluish-1000: #f4f6fc;
+  --dsw-static-neutral-bluish-950: #0a0d15;
+  --dsw-static-neutral-bluish-900: #0e1220;
+  --dsw-static-neutral-bluish-875: #121828;
+  --dsw-static-neutral-bluish-850: #171e33;
+  --dsw-static-neutral-bluish-800: #1d2540;
+  --dsw-static-neutral-bluish-750: #252e4d;
+  --dsw-static-neutral-bluish-700: #2e3860;
+  --dsw-static-neutral-bluish-600: #414b74;
+  --dsw-static-neutral-bluish-500: #55608c;
+  --dsw-static-neutral-bluish-400: #6c77a0;
+  --dsw-static-neutral-bluish-300: #8d97ba;
+  --dsw-static-neutral-bluish-200: #a9b2d1;
+  --dsw-static-neutral-bluish-150: #bcc4df;
+  --dsw-static-neutral-bluish-100: #ccd3ea;
+  --dsw-static-neutral-bluish-75: #d9def0;
+  --dsw-static-neutral-bluish-60: #e3e7f5;
+  --dsw-static-neutral-bluish-50: #eceffa;
+
+  /* accent → vivid deepseek blue */
+  --dsw-static-deepseek-500: #5b8cff;
+  --dsw-static-deepseek-450: #6f9bff;
+  --dsw-static-deepseek-400: #8aadff;
+  --dsw-static-deepseek-300: #aac4ff;
+  --dsw-static-deepseek-200: #c8d9ff;
+  --dsw-static-deepseek-100: #dce7ff;
+  --dsw-static-deepseek-50: #eaf1ff;
+  --dsw-static-deepseek-600: #4a6fd6;
+  --dsw-static-deepseek-800: #3c4f86;
+  --dsw-static-deepseek-900: #2e3b66;
+
+  /* aliases */
+  --dsw-alias-bg-base: #0a0d15;
+  --dsw-alias-bg-layer-1: #121828;
+  --dsw-alias-bg-layer-2: #171e33;
+  --dsw-alias-bg-layer-3: #1d2540;
+  --dsw-alias-bg-mask-1: rgba(4, 7, 15, 0.62);
+  --dsw-alias-bg-skeleton: rgba(255, 255, 255, 0.06);
+  --dsw-alias-border-l1: rgba(255, 255, 255, 0.07);
+  --dsw-alias-border-l2-darkmode-thin: rgba(255, 255, 255, 0.08);
+  --dsw-alias-border-l2: rgba(255, 255, 255, 0.12);
+  --dsw-alias-border-l3: rgba(255, 255, 255, 0.16);
+  --dsw-alias-border-l4: rgba(255, 255, 255, 0.22);
+  --dsw-alias-interactive-bg-hover: rgba(255, 255, 255, 0.07);
+  --dsw-alias-interactive-bg-hover-accent: rgba(91, 140, 255, 0.14);
+  --dsw-alias-interactive-bg-active: rgba(255, 255, 255, 0.12);
+  --dsw-alias-interactive-bg-hover-solid: rgba(255, 255, 255, 0.1);
+  --dsw-alias-button-primary-fill: linear-gradient(135deg, #5b8cff 0%, #7c5cff 100%);
+  --dsw-alias-button-primary-hover: linear-gradient(135deg, #6f9bff 0%, #8d70ff 100%);
+  --dsw-alias-button-primary-dimmed: rgba(91, 140, 255, 0.16);
+  --dsw-alias-button-info-fill: #5b8cff;
+  --dsw-alias-button-info-hover: #6f9bff;
+  --dsw-alias-brand-primary-new-colorprimary-new-color: #6f9bff;
+  --dsw-alias-state-business-primary: #6f9bff;
+  --dsw-alias-state-business-tertiary: rgba(91, 140, 255, 0.18);
+  --dsw-alias-label-caption: #6c77a0;
+  --dsw-alias-markdown-code-block: #0d1222;
+  --dsw-alias-markdown-code-block-banner: #101629;
+  --dsw-alias-markdown-inline-code: rgba(91, 140, 255, 0.16);
+  --dsw-alias-markdown-tag: rgba(91, 140, 255, 0.14);
+  --dsw-alias-toast-bg: #232c4a;
+  --dsw-alias-tooltip-bg: #252e4d;
+  --dsw-alias-scrollbar-bg-l1: rgba(91, 140, 255, 0.3);
+  --dsw-alias-scrollbar-bg-l2: rgba(91, 140, 255, 0.35);
+  --dsw-alias-scrollbar-hover-l1: rgba(91, 140, 255, 0.5);
+  --dsw-alias-scrollbar-hover-l2: rgba(91, 140, 255, 0.55);
+  --dsw-specific-bubble: #141a2e;
+  --dsw-specific-bubble-highlight: #232c4a;
+  --dsw-specific-input-major: #161d34;
+  --dsw-specific-sidebar-fill: linear-gradient(180deg, #0d1120 0%, #0f1426 100%);
+  --dsw-specific-sidebar-nav-item-active: rgba(91, 140, 255, 0.16);
+  --dsw-specific-sidebar-nav-item-active-accent: rgba(91, 140, 255, 0.26);
+  --dsw-specific-sidebar-nav-item-hover: rgba(255, 255, 255, 0.06);
+  --dsw-shadow-lv2: 0 2px 6px rgba(0, 0, 0, 0.28), 0 8px 24px rgba(0, 0, 0, 0.22);
+  --dsw-shadow-lv3: 0 0 1px rgba(255, 255, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.28), 0 16px 48px rgba(0, 0, 0, 0.4);
+  --dsh-scrollbar-thumb: rgba(91, 140, 255, 0.35);
+  --dsh-scrollbar-thumb-hover: rgba(91, 140, 255, 0.6);
+}
+
+/* ---------- surfaces ---------- */
+
+/* Ambient glow at the top of the conversation */
+[data-conversation-scroll] {
+  background: radial-gradient(900px 420px at 50% -10%, rgba(59, 130, 246, 0.14), transparent 70%), transparent;
+}
+body[data-ds-dark-theme] [data-conversation-scroll] {
+  background: radial-gradient(900px 420px at 50% -10%, rgba(91, 140, 255, 0.1), transparent 70%), transparent;
+}
+
+/* Composer card: glassy elevated surface */
+[data-composer-card] {
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2) 82%, transparent) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid var(--dsw-alias-border-l2) !important;
+  box-shadow: 0 8px 32px rgba(4, 7, 15, 0.2), 0 2px 8px rgba(4, 7, 15, 0.14) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+body[data-ds-dark-theme] [data-composer-card] {
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2) 74%, transparent) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+/* Light: a clearly visible frosted card with a blue-tinted border */
+body:not([data-ds-dark-theme]) [data-composer-card] {
+  background: color-mix(in srgb, #ffffff 86%, transparent) !important;
+  border-color: rgba(59, 130, 246, 0.32) !important;
+  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.08), 0 12px 40px rgba(59, 130, 246, 0.14) !important;
+}
+[data-composer-card]:focus-within {
+  border-color: rgba(91, 140, 255, 0.55) !important;
+  box-shadow: 0 0 0 3px rgba(91, 140, 255, 0.14), 0 8px 32px rgba(4, 7, 15, 0.18) !important;
+}
+
+/* Shell overlays (menus / popovers): soft blur. The overlay layer is
+   always mounted at full viewport size (AppFrame) and always contains a
+   display:contents slot wrapper, so only blur it when an actual overlay
+   element is mounted inside that wrapper — otherwise the whole page blurs. */
+[data-shell-overlay]:has(> [data-slot="shell.overlay"]:not(:empty)) {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* Floating pill scrollbar (WebKit path) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 8px;
+  background-color: transparent;
+  background-image: linear-gradient(180deg, rgba(91, 140, 255, 0.55), rgba(124, 92, 255, 0.55));
+}
+::-webkit-scrollbar-thumb:hover {
+  background-image: linear-gradient(180deg, rgba(111, 155, 255, 0.75), rgba(141, 112, 255, 0.75));
+}
+
+/* ---------- DeepSeek 鲸鱼娘 background ---------- */
+/* 背景立绘：DeepSeek 娘化角色「鲸鱼娘」（透明底 WebP 内嵌，无遮罩无面板）。
+   素材来源 https://github.com/fornarwhal/deepseek-whale-girl-icon
+   （CC BY-NC-SA 4.0，非商用个人主题使用；角色「溟月」by 上善无形，
+   DeepSeek 二创 by ZipZipPipe，修复 by QYQCAMIAO）。
+   浅色 40% 透明度 / 深色 60%：文字直接坐在半透明立绘上，无缝融合。 */
+body {
+  --ds-crystal-whale: url("data:image/webp;base64,__WHALE_LIGHT__");
+  background-color: var(--dsw-alias-bg-base);
+  background-image: var(--ds-crystal-whale);
+  background-position: calc(100% - 6px) 100%;
+  background-size: auto 92vh;
+  background-repeat: no-repeat;
+}
+body[data-ds-dark-theme] {
+  --ds-crystal-whale: url("data:image/webp;base64,__WHALE_DARK__");
+}
+
+/* the shell frame must be transparent so the body art shows through */
+[class*="_frame"] {
+  background: transparent !important;
+}
+
+/* small screens: shrink the whale */
+@media (max-width: 720px) {
+  body {
+    background-size: auto 36vh;
+    background-position: calc(100% - 6px) 100%;
+  }
+}
+
+/* The conversation root paints an OPAQUE bg-base over the whole center column,
+   hiding the body background. Make it fully transparent — no panel, no
+   vignette, no edges. */
+[data-phase] {
+  background: transparent !important;
+}
+
+/* Composer seat: keep the fade but end semi-transparent so the whale shows
+   through the seat's lower area instead of a solid wall. */
+[data-composer-seat] {
+  background: linear-gradient(180deg, transparent 0%, rgba(238, 243, 251, 0.55) 100%) !important;
+}
+body[data-ds-dark-theme] [data-composer-seat] {
+  background: linear-gradient(180deg, transparent 0%, rgba(10, 13, 21, 0.55) 100%) !important;
+}

@@ -1,0 +1,95 @@
+# dsh-ui-crystal 🐋💎
+
+> Crystal — a polished blue-violet UI theme for the **DeepSeek Harness** web shell, featuring the DeepSeek **鲸鱼娘 (whale-girl)** as a seamless background companion.
+>
+> 为 DeepSeek Harness 网页端打造的水晶主题：深蓝紫配色 + 鲸鱼娘立绘背景，纯 CSS 客户端插件，无需构建、零依赖、即插即用。
+
+![Light](assets/screenshots/light.png)
+![Dark](assets/screenshots/dark.png)
+
+## Features / 特性
+
+| Area | Effect |
+|---|---|
+| Dark palette | Deep blue-violet scale replaces the stock gray-blue; vivid DeepSeek-blue accent |
+| Light palette | Airy blue-tinted white, refined shadows |
+| Brand / buttons | Blue → violet gradient primary fill, matching hover states |
+| Composer | Glassy translucent input card with backdrop blur and a focus glow |
+| Conversation | Soft ambient glow behind the chat column |
+| Scrollbars | Blue-violet floating pill thumb (WebKit) + tinted Firefox thumb |
+| Background | 鲸鱼娘 transparent PNG embedded as WebP (40% alpha light / 60% dark), zero-scrim, seamless |
+| Typography | Nicer UI / code font stacks (full CJK fallbacks) |
+
+## How it works / 原理
+
+A pure-CSS **client plugin** in the DSH sense: the package declares
+`dsh.client` and exposes a `./client` bundle that the web shell materializes.
+Materializing injects one `<style>` tag that overrides the harness's
+`--dsw-*` design tokens plus a few stable attribute-hooked surfaces. No server
+logic, no dependencies, no build step for consumers.
+
+## Install / 安装（官方方式）
+
+```sh
+# from this repository's parent directory
+dsh plugin --profile web add ./dsh-ui-crystal
+```
+
+Then add the loader row to the profile's user patch layer
+`$DSH_HOME\profiles\web\cordis.patch.yml`:
+
+```yaml
+- insert:
+    - id: ui-crystal
+      name: dsh-ui-crystal
+```
+
+Finally **restart `dsh web`** once — a new client row only enters the browser
+boot graph at boot. After that, editing `client.js` hot-reloads via the
+built-in client HMR chain (no restart, no refresh).
+
+### Uninstall / 卸载
+
+```sh
+dsh plugin --profile web remove dsh-ui-crystal
+```
+
+…then remove the `- insert:` block from `cordis.patch.yml` and restart.
+
+## Develop / 开发
+
+The theme's readable source lives in `src/styles.css`; the whale art in
+`assets/`. `client.js` is a **generated artifact** — rebuild it after changes:
+
+```sh
+node build.js          # src/styles.css + assets/*.webp -> client.js
+```
+
+### Customize the whale / 自定义鲸鱼
+
+| Want | Where |
+|---|---|
+| Bigger / smaller | `background-size: auto 92vh` in `src/styles.css` |
+| Stronger / fainter | regenerate `assets/whale-light.webp` (40% alpha) / `assets/whale-dark.webp` (60%) |
+| Different art | swap the WebP files (keep transparency), then `node build.js` |
+| Reposition | `background-position: calc(100% - 6px) 100%` |
+
+To regenerate the alpha variants from a source PNG with
+[sharp](https://sharp.pixelplumbing.com/):
+
+```js
+// multiply the alpha channel, e.g. 0.4 for light / 0.6 for dark, then
+// .webp({ quality: 82 }) and save into assets/
+```
+
+## License / 许可
+
+- **Code** (CSS, build scripts, manifests): [MIT](LICENSE)
+- **Artwork** (whale-girl images): **CC BY-NC-SA 4.0** — see [ASSET_LICENSE.md](ASSET_LICENSE.md)
+  - Source: [fornarwhal/deepseek-whale-girl-icon](https://github.com/fornarwhal/deepseek-whale-girl-icon)
+  - 角色「溟月」by 上善无形 · 二创 by ZipZipPipe · 修复 by QYQCAMIAO
+
+## Credits / 致谢
+
+- [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) — the host app this theme plugs into
+- 鲸鱼娘素材仓库作者 for the artwork
