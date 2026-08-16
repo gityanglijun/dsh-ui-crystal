@@ -30,6 +30,18 @@ logic, no dependencies, no build step for consumers.
 
 ## Install / 安装（官方方式）
 
+> 📖 完整部署文档见 **[DEPLOY.md](DEPLOY.md)**（一键脚本、手动步骤、验证、故障排查、卸载）。
+
+**一键部署（推荐）：**
+
+```sh
+cd dsh-ui-crystal
+node deploy.js        # 官方 dsh plugin 流程 + 幂等补 loader 行 + 校验
+dsh web               # 重启一次
+```
+
+**手动官方方式：**
+
 ```sh
 # from this repository's parent directory
 dsh plugin --profile web add ./dsh-ui-crystal
