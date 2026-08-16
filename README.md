@@ -1,4 +1,4 @@
-# dsh-ui-crystal 🐋💎
+﻿# dsh-ui-crystal 🐋💎
 
 > Crystal — a polished blue-violet UI theme for the **DeepSeek Harness** web shell, featuring the DeepSeek **鲸鱼娘 (whale-girl)** as a seamless background companion.
 >

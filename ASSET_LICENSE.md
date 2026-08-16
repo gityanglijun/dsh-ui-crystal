@@ -1,4 +1,4 @@
-# Asset License — 素材许可
+﻿# Asset License — 素材许可
 
 The whale-girl artwork embedded in this theme is **NOT** covered by the MIT
 license of the code. It is fan art of the DeepSeek mascot, used under

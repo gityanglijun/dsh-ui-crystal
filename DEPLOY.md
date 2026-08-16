@@ -1,4 +1,4 @@
-# 部署文档 / Deployment Guide
+﻿# 部署文档 / Deployment Guide
 
 如何把 **dsh-ui-crystal** 部署到 DeepSeek Harness 的 `web` profile 上。
 How to deploy **dsh-ui-crystal** into a DeepSeek Harness `web` profile.
