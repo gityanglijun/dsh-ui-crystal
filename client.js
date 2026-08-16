@@ -231,12 +231,17 @@ body[data-ds-dark-theme] .ds-bg-layer {
   background-size: auto 92vh;
   background-repeat: no-repeat;
 }
-/* 壁纸模式：与鲸鱼娘一致，右下角自然大小展示，不全屏拉伸 */
+/* 壁纸模式：默认与鲸鱼娘一致，右下角自然大小展示（内置图片固定此模式）。
+   用户上传的图片可选 data-fit="cover" 全屏拉伸。 */
 .ds-bg-layer[data-mode="wallpaper"] {
   background-image: var(--ds-wall-img, none);
   background-position: calc(100% - 6px) 100%;
   background-size: auto 72vh;
   background-repeat: no-repeat;
+}
+.ds-bg-layer[data-mode="wallpaper"][data-fit="cover"] {
+  background-position: center;
+  background-size: cover;
 }
 body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
   background-image: var(--ds-wall-img, none);
@@ -350,6 +355,14 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
 .ds-crystal-row button:hover {
   background: var(--dsw-alias-interactive-bg-hover);
 }
+.ds-crystal-row button.active {
+  border-color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-state-business-primary);
+}
+.ds-crystal-row button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .ds-crystal-opacity {
   display: flex;
   align-items: center;
@@ -395,7 +408,7 @@ body[data-ds-dark-theme] [data-composer-seat] {
 			document.body.appendChild(layer);
 		}
 		var KEY = "ds-crystal-bg";
-		var state = { mode: "whale", opacity: 1, img: null };
+		var state = { mode: "whale", opacity: 1, img: null, fit: "corner" };
 		try {
 			var saved = JSON.parse(localStorage.getItem(KEY) || "null");
 			if (saved && typeof saved === "object" && saved.mode) state = saved;
@@ -403,6 +416,7 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		function persist() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 		function applyState() {
 			layer.dataset.mode = state.mode;
+			layer.dataset.fit = state.fit || "corner";
 			layer.style.opacity = String(state.opacity);
 			if (state.img) layer.style.setProperty("--ds-wall-img", 'url("' + state.img + '")');
 			else layer.style.removeProperty("--ds-wall-img");
@@ -412,10 +426,18 @@ body[data-ds-dark-theme] [data-composer-seat] {
 			if (slider) slider.value = state.opacity;
 			var val = document.querySelector(".ds-crystal-op-val");
 			if (val) val.textContent = Math.round(state.opacity * 100) + "%";
+			var isBuiltIn = state.img && state.img.indexOf("/ds-crystal/assets/") === 0;
+			var fitBtns = document.querySelectorAll(".ds-crystal-fit button");
+			for (var f = 0; f < fitBtns.length; f++) {
+				var b = fitBtns[f];
+				b.classList.toggle("active", b.dataset.fit === (state.fit || "corner"));
+				b.disabled = isBuiltIn && b.dataset.fit === "cover";
+			}
 		}
-		function setWallpaper(img) {
+		function setWallpaper(img, fit) {
 			state.mode = "wallpaper";
 			state.img = img;
+			if (fit) state.fit = fit;
 			persist();
 			applyState();
 		}
@@ -443,7 +465,7 @@ body[data-ds-dark-theme] [data-composer-seat] {
 					t.dataset.key = url;
 					t.style.backgroundImage = 'url("' + url + '")';
 					t.title = f;
-					t.addEventListener("click", function () { setWallpaper(url); });
+					t.addEventListener("click", function () { setWallpaper(url, "corner"); });
 					thumbs.appendChild(t);
 				});
 				applyState();
@@ -489,6 +511,19 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		row.appendChild(wBtn);
 		row.appendChild(uBtn);
 		row.appendChild(nBtn);
+		var fitRow = document.createElement("div");
+		fitRow.className = "ds-crystal-row ds-crystal-fit";
+		var cornerBtn = document.createElement("button");
+		cornerBtn.dataset.fit = "corner";
+		cornerBtn.textContent = "🖼 角落";
+		cornerBtn.addEventListener("click", function () { state.fit = "corner"; persist(); applyState(); });
+		var coverBtn = document.createElement("button");
+		coverBtn.dataset.fit = "cover";
+		coverBtn.textContent = "🖥 全屏";
+		coverBtn.title = "内置图片固定右下角，仅本地上传图可全屏";
+		coverBtn.addEventListener("click", function () { state.fit = "cover"; persist(); applyState(); });
+		fitRow.appendChild(cornerBtn);
+		fitRow.appendChild(coverBtn);
 		var opRow = document.createElement("div");
 		opRow.className = "ds-crystal-opacity";
 		var opLabel = document.createElement("span");
@@ -514,6 +549,7 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		panel.appendChild(title);
 		panel.appendChild(thumbs);
 		panel.appendChild(row);
+		panel.appendChild(fitRow);
 		panel.appendChild(opRow);
 		panel.appendChild(hint);
 		ui.appendChild(btn);

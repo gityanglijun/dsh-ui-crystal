@@ -37,7 +37,7 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 			document.body.appendChild(layer);
 		}
 		var KEY = "ds-crystal-bg";
-		var state = { mode: "whale", opacity: 1, img: null };
+		var state = { mode: "whale", opacity: 1, img: null, fit: "corner" };
 		try {
 			var saved = JSON.parse(localStorage.getItem(KEY) || "null");
 			if (saved && typeof saved === "object" && saved.mode) state = saved;
@@ -45,6 +45,7 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 		function persist() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 		function applyState() {
 			layer.dataset.mode = state.mode;
+			layer.dataset.fit = state.fit || "corner";
 			layer.style.opacity = String(state.opacity);
 			if (state.img) layer.style.setProperty("--ds-wall-img", 'url("' + state.img + '")');
 			else layer.style.removeProperty("--ds-wall-img");
@@ -54,10 +55,18 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 			if (slider) slider.value = state.opacity;
 			var val = document.querySelector(".ds-crystal-op-val");
 			if (val) val.textContent = Math.round(state.opacity * 100) + "%";
+			var isBuiltIn = state.img && state.img.indexOf("/ds-crystal/assets/") === 0;
+			var fitBtns = document.querySelectorAll(".ds-crystal-fit button");
+			for (var f = 0; f < fitBtns.length; f++) {
+				var b = fitBtns[f];
+				b.classList.toggle("active", b.dataset.fit === (state.fit || "corner"));
+				b.disabled = isBuiltIn && b.dataset.fit === "cover";
+			}
 		}
-		function setWallpaper(img) {
+		function setWallpaper(img, fit) {
 			state.mode = "wallpaper";
 			state.img = img;
+			if (fit) state.fit = fit;
 			persist();
 			applyState();
 		}
@@ -85,7 +94,7 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 					t.dataset.key = url;
 					t.style.backgroundImage = 'url("' + url + '")';
 					t.title = f;
-					t.addEventListener("click", function () { setWallpaper(url); });
+					t.addEventListener("click", function () { setWallpaper(url, "corner"); });
 					thumbs.appendChild(t);
 				});
 				applyState();
@@ -131,6 +140,19 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 		row.appendChild(wBtn);
 		row.appendChild(uBtn);
 		row.appendChild(nBtn);
+		var fitRow = document.createElement("div");
+		fitRow.className = "ds-crystal-row ds-crystal-fit";
+		var cornerBtn = document.createElement("button");
+		cornerBtn.dataset.fit = "corner";
+		cornerBtn.textContent = "🖼 角落";
+		cornerBtn.addEventListener("click", function () { state.fit = "corner"; persist(); applyState(); });
+		var coverBtn = document.createElement("button");
+		coverBtn.dataset.fit = "cover";
+		coverBtn.textContent = "🖥 全屏";
+		coverBtn.title = "内置图片固定右下角，仅本地上传图可全屏";
+		coverBtn.addEventListener("click", function () { state.fit = "cover"; persist(); applyState(); });
+		fitRow.appendChild(cornerBtn);
+		fitRow.appendChild(coverBtn);
 		var opRow = document.createElement("div");
 		opRow.className = "ds-crystal-opacity";
 		var opLabel = document.createElement("span");
@@ -156,6 +178,7 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 		panel.appendChild(title);
 		panel.appendChild(thumbs);
 		panel.appendChild(row);
+		panel.appendChild(fitRow);
 		panel.appendChild(opRow);
 		panel.appendChild(hint);
 		ui.appendChild(btn);

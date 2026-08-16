@@ -216,12 +216,17 @@ body[data-ds-dark-theme] .ds-bg-layer {
   background-size: auto 92vh;
   background-repeat: no-repeat;
 }
-/* 壁纸模式：与鲸鱼娘一致，右下角自然大小展示，不全屏拉伸 */
+/* 壁纸模式：默认与鲸鱼娘一致，右下角自然大小展示（内置图片固定此模式）。
+   用户上传的图片可选 data-fit="cover" 全屏拉伸。 */
 .ds-bg-layer[data-mode="wallpaper"] {
   background-image: var(--ds-wall-img, none);
   background-position: calc(100% - 6px) 100%;
   background-size: auto 72vh;
   background-repeat: no-repeat;
+}
+.ds-bg-layer[data-mode="wallpaper"][data-fit="cover"] {
+  background-position: center;
+  background-size: cover;
 }
 body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
   background-image: var(--ds-wall-img, none);
@@ -334,6 +339,14 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
 }
 .ds-crystal-row button:hover {
   background: var(--dsw-alias-interactive-bg-hover);
+}
+.ds-crystal-row button.active {
+  border-color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-state-business-primary);
+}
+.ds-crystal-row button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .ds-crystal-opacity {
   display: flex;
