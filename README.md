@@ -28,45 +28,35 @@ Materializing injects one `<style>` tag that overrides the harness's
 `--dsw-*` design tokens plus a few stable attribute-hooked surfaces. No server
 logic, no dependencies, no build step for consumers.
 
-## Install / 安装（官方方式）
+## Install / 安装（官方 bundle 格式，一行部署）
 
-> 📖 完整部署文档见 **[DEPLOY.md](DEPLOY.md)**（一键脚本、手动步骤、验证、故障排查、卸载）。
+> 📖 完整部署文档见 **[DEPLOY.md](DEPLOY.md)**（一键脚本、一行命令、验证、故障排查、卸载）。
 
 **一键部署（推荐）：**
 
 ```sh
 cd dsh-ui-crystal
-node deploy.js        # 官方 dsh plugin 流程 + 幂等补 loader 行 + 校验
+node deploy.js        # 官方 dsh plugin 流程 + bundle 自动激活 + 校验
 dsh web               # 重启一次
 ```
 
-**手动官方方式：**
+**纯命令一行部署**（发布到 GitHub 后，或本地路径）：
 
 ```sh
-# from this repository's parent directory
-dsh plugin --profile web add ./dsh-ui-crystal
+dsh plugin --profile web add "github:<你的用户名>/dsh-ui-crystal#main"
+dsh web
 ```
 
-Then add the loader row to the profile's user patch layer
-`$DSH_HOME\profiles\web\cordis.patch.yml`:
-
-```yaml
-- insert:
-    - id: ui-crystal
-      name: dsh-ui-crystal
-```
-
-Finally **restart `dsh web`** once — a new client row only enters the browser
-boot graph at boot. After that, editing `client.js` hot-reloads via the
-built-in client HMR chain (no restart, no refresh).
+本包声明 `dsh.bundle.patch`（`cordis.patch.yml`），因此 `dsh plugin add` 会
+**自动**把它加入 `dsh.profile.bundles`，启动时自动插入 loader 行——**无需手动
+编辑任何 profile 文件**。之后编辑 `client.js` 经 client-hmr 热更新，无需重启。
 
 ### Uninstall / 卸载
 
 ```sh
 dsh plugin --profile web remove dsh-ui-crystal
+dsh web
 ```
-
-…then remove the `- insert:` block from `cordis.patch.yml` and restart.
 
 ## Develop / 开发
 

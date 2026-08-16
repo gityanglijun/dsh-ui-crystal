@@ -1,0 +1,8 @@
+# dsh-ui-crystal bundle patch: mounts the client plugin into the web tree.
+# Because package.json declares `dsh.bundle.patch`, `dsh plugin --profile web
+# add <this-repo>` automatically appends this package to the profile's bundle
+# layer, and this patch auto-inserts the loader row on the next boot — no
+# manual cordis.patch.yml editing needed.
+- insert:
+    - id: ui-crystal
+      name: dsh-ui-crystal

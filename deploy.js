@@ -1,21 +1,18 @@
 // deploy.js — one-click deployment of dsh-ui-crystal into a DeepSeek Harness
-// `web` profile, using the OFFICIAL dsh plugin flow.
+// `web` profile, using the OFFICIAL bundle-plugin flow (dsh.bundle.patch).
 //
 // Usage:
 //   node deploy.js                 # deploy into the web profile (default)
 //   node deploy.js --profile web   # explicit profile name
-//   node deploy.js --skip-pnpm     # only patch cordis.patch.yml / verify
+//   node deploy.js --skip-pnpm     # skip the dependency install, only verify
 //
-// What it does (idempotent — safe to re-run):
-//   1. checks prerequisites (dsh CLI, pnpm)
-//   2. installs this package into the profile: dsh plugin --profile <name> add <this-dir>
-//   3. ensures the loader row exists in $DSH_HOME/profiles/<name>/cordis.patch.yml
-//   4. verifies the composed tree via dsh --profile <name> --dump-config
-//   5. prints restart + browser verification steps
-//
-// A restart of `dsh web` is required once for a NEW plugin row to enter the
-// browser boot graph. After that, editing client.js hot-reloads via the
-// client HMR chain — no restarts needed.
+// Because package.json declares `dsh.bundle.patch`, `dsh plugin --profile web
+// add <this-repo>`:
+//   1. installs the dependency (pnpm),
+//   2. AUTO-APPENDS "dsh-ui-crystal" to dsh.profile.bundles,
+//   3. the bundle's cordis.patch.yml auto-inserts the loader row on next boot.
+// So deployment is effectively one command + one restart — no manual
+// cordis.patch.yml editing. This script is idempotent and re-runnable.
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
@@ -33,7 +30,7 @@ const profile = args.includes("--profile")
 const skipPnpm = args.includes("--skip-pnpm");
 const dshHome = process.env.DSH_HOME || path.join(os.homedir(), ".dsh");
 const profileDir = path.join(dshHome, "profiles", profile);
-const patchFile = path.join(profileDir, "cordis.patch.yml");
+const manifestPath = path.join(profileDir, "package.json");
 
 const log = (m) => console.log(`[deploy] ${m}`);
 const warn = (m) => console.warn(`[deploy] ⚠ ${m}`);
@@ -55,30 +52,6 @@ function which(cmd) {
     { encoding: "utf8", shell: process.platform === "win32" }
   );
   return probe.status === 0 && probe.stdout.trim().length > 0;
-}
-
-function ensurePatchRow() {
-  if (!fs.existsSync(profileDir)) {
-    throw new Error(
-      `profile directory not found: ${profileDir}\n` +
-        `Run "dsh plugin --profile ${profile}" once, or start "dsh ${profile === "web" ? "web" : "--profile " + profile}" to auto-initialize it.`
-    );
-  }
-  const content = fs.existsSync(patchFile) ? fs.readFileSync(patchFile, "utf8") : "";
-  if (new RegExp(`name:\\s*${PKG_NAME}`).test(content)) {
-    log(`${patchFile} already contains the ${PKG_NAME} row — skipping`);
-    return;
-  }
-  const block = `\n# dsh-ui-crystal: Crystal UI theme (client plugin, deployed by deploy.js)\n- insert:\n    - id: ${ROW_ID}\n      name: ${PKG_NAME}\n`;
-  const emptyList = /^\s*\[\s*\]\s*$/m;
-  let next;
-  if (emptyList.test(content)) {
-    next = content.replace(emptyList, block.trim());
-  } else {
-    next = content.replace(/\s*$/, "") + block;
-  }
-  fs.writeFileSync(patchFile, next, "utf8");
-  log(`added loader row to ${patchFile}`);
 }
 
 function verify() {
@@ -115,7 +88,15 @@ function main() {
     log("--skip-pnpm: skipping dependency install");
   }
 
-  ensurePatchRow();
+  // sanity: the reconcile must have registered us as a bundle
+  if (fs.existsSync(manifestPath)) {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    const bundles = manifest.dsh?.profile?.bundles ?? [];
+    log(bundles.includes(PKG_NAME)
+      ? `profile bundles include ${PKG_NAME} ✓ (auto-activated via dsh.bundle)`
+      : `WARNING: ${PKG_NAME} not in dsh.profile.bundles — reconcile may not have run`);
+  }
+
   verify();
 
   console.log(`
@@ -123,17 +104,19 @@ function main() {
  dsh-ui-crystal deployed to profile "${profile}".
 ──────────────────────────────────────────────────────────
  Next steps:
- 1) RESTART the web service once (required for a new plugin row):
+ 1) RESTART the web service once (bundle layers compose at boot):
       dsh ${profile === "web" ? "web" : `--profile ${profile}`}
  2) Open the app and HARD-REFRESH (Ctrl+Shift+R).
  3) Confirm it loaded (browser console):
       document.querySelector('style[data-plugin-css="dsh-ui-crystal/theme.css"]')
     or check Settings → Plugins → entryId "ui-crystal" is active.
 
+ One-line install from a git source (after publishing):
+      dsh plugin --profile ${profile} add "github:<user>/dsh-ui-crystal#main"
+
  Uninstall:
       dsh plugin --profile ${profile} remove ${PKG_NAME}
-    then remove the "- insert: ui-crystal" block from ${patchFile}
-    and restart.
+    then restart.
 ──────────────────────────────────────────────────────────`);
 }
 
