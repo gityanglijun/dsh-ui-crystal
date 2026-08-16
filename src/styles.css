@@ -30,6 +30,16 @@ body {
   background: rgba(91, 140, 255, 0.28);
 }
 
+/* 宝石蓝焦点环（键盘导航） */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid rgba(91, 140, 255, 0.55);
+  outline-offset: 2px;
+}
+
 /* ---------- light theme ---------- */
 body {
   --dsw-alias-bg-base: #eef3fb;
@@ -46,8 +56,14 @@ body {
   --dsw-alias-interactive-bg-hover-accent: rgba(59, 130, 246, 0.1);
   --dsw-alias-state-business-primary: #2563eb;
   --dsw-alias-markdown-inline-code: rgba(59, 130, 246, 0.12);
+  /* 蓝色宝石风边框：所有用 border token 的面板/菜单/弹层/代码块都染上蓝 */
+  --dsw-alias-border-l1: rgba(59, 130, 246, 0.18);
+  --dsw-alias-border-l2-darkmode-thin: rgba(59, 130, 246, 0.24);
+  --dsw-alias-border-l2: rgba(59, 130, 246, 0.32);
+  --dsw-alias-border-l3: rgba(59, 130, 246, 0.44);
+  --dsw-alias-border-l4: rgba(59, 130, 246, 0.58);
   --dsw-shadow-lv2: 0 2px 8px rgba(30, 41, 59, 0.08), 0 8px 24px rgba(30, 41, 59, 0.08);
-  --dsw-shadow-lv3: 0 0 1px rgba(30, 41, 59, 0.1), 0 12px 32px rgba(30, 41, 59, 0.14);
+  --dsw-shadow-lv3: 0 0 1px rgba(59, 130, 246, 0.18), 0 12px 32px rgba(30, 41, 59, 0.14);
   --dsh-scrollbar-thumb: rgba(59, 130, 246, 0.45);
   --dsh-scrollbar-thumb-hover: rgba(59, 130, 246, 0.65);
 }
@@ -93,11 +109,11 @@ body[data-ds-dark-theme] {
   --dsw-alias-bg-layer-3: #1d2540;
   --dsw-alias-bg-mask-1: rgba(4, 7, 15, 0.62);
   --dsw-alias-bg-skeleton: rgba(255, 255, 255, 0.06);
-  --dsw-alias-border-l1: rgba(255, 255, 255, 0.07);
-  --dsw-alias-border-l2-darkmode-thin: rgba(255, 255, 255, 0.08);
-  --dsw-alias-border-l2: rgba(255, 255, 255, 0.12);
-  --dsw-alias-border-l3: rgba(255, 255, 255, 0.16);
-  --dsw-alias-border-l4: rgba(255, 255, 255, 0.22);
+  --dsw-alias-border-l1: rgba(91, 140, 255, 0.24);
+  --dsw-alias-border-l2-darkmode-thin: rgba(91, 140, 255, 0.3);
+  --dsw-alias-border-l2: rgba(91, 140, 255, 0.4);
+  --dsw-alias-border-l3: rgba(91, 140, 255, 0.52);
+  --dsw-alias-border-l4: rgba(91, 140, 255, 0.66);
   --dsw-alias-interactive-bg-hover: rgba(255, 255, 255, 0.07);
   --dsw-alias-interactive-bg-hover-accent: rgba(91, 140, 255, 0.14);
   --dsw-alias-interactive-bg-active: rgba(255, 255, 255, 0.12);
@@ -144,28 +160,45 @@ body[data-ds-dark-theme] [data-conversation-scroll] {
   background: radial-gradient(900px 420px at 50% -10%, rgba(91, 140, 255, 0.1), transparent 70%), transparent;
 }
 
-/* Composer card: glassy elevated surface */
+/* Composer card: 蓝宝石边（内缘高光 + 外圈辉光） */
 [data-composer-card] {
   background: color-mix(in srgb, var(--dsw-alias-bg-layer-2) 82%, transparent) !important;
   -webkit-backdrop-filter: blur(22px) saturate(160%);
   backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid var(--dsw-alias-border-l2) !important;
-  box-shadow: 0 8px 32px rgba(4, 7, 15, 0.2), 0 2px 8px rgba(4, 7, 15, 0.14) !important;
+  border: 1px solid var(--dsw-alias-border-l3) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(138, 173, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 8px 32px rgba(4, 7, 15, 0.18),
+    0 0 16px rgba(59, 130, 246, 0.16) !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 body[data-ds-dark-theme] [data-composer-card] {
   background: color-mix(in srgb, var(--dsw-alias-bg-layer-2) 74%, transparent) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(91, 140, 255, 0.5) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(138, 173, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 8px 32px rgba(4, 7, 15, 0.3),
+    0 0 18px rgba(91, 140, 255, 0.2) !important;
 }
-/* Light: a clearly visible frosted card with a blue-tinted border */
+/* Light: a clearly visible frosted card with a gem-blue border */
 body:not([data-ds-dark-theme]) [data-composer-card] {
   background: color-mix(in srgb, #ffffff 86%, transparent) !important;
-  border-color: rgba(59, 130, 246, 0.32) !important;
-  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.08), 0 12px 40px rgba(59, 130, 246, 0.14) !important;
+  border-color: rgba(59, 130, 246, 0.45) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(138, 173, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 4px 16px rgba(30, 41, 59, 0.08),
+    0 0 20px rgba(59, 130, 246, 0.2) !important;
 }
 [data-composer-card]:focus-within {
-  border-color: rgba(91, 140, 255, 0.55) !important;
-  box-shadow: 0 0 0 3px rgba(91, 140, 255, 0.14), 0 8px 32px rgba(4, 7, 15, 0.18) !important;
+  border-color: rgba(91, 140, 255, 0.85) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(138, 173, 255, 0.4),
+    0 0 0 3px rgba(91, 140, 255, 0.18),
+    0 0 28px rgba(59, 130, 246, 0.35),
+    0 8px 32px rgba(4, 7, 15, 0.18) !important;
 }
 
 /* Shell overlays (menus / popovers): soft blur. The overlay layer is
@@ -269,13 +302,15 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid var(--dsw-alias-border-l2);
-  background: var(--dsw-alias-bg-layer-2);
+  border: 1px solid transparent;
+  background:
+    linear-gradient(135deg, rgba(91, 140, 255, 0.28), rgba(124, 92, 255, 0.28)) padding-box,
+    linear-gradient(135deg, #5b8cff, #8aadff, #7c5cff) border-box;
   color: var(--dsw-alias-label-primary);
   font-size: 18px;
   line-height: 1;
   cursor: grab;
-  box-shadow: var(--dsw-shadow-lv2);
+  box-shadow: 0 0 14px rgba(91, 140, 255, 0.35), 0 2px 8px rgba(4, 7, 15, 0.15);
   touch-action: none;
 }
 .ds-crystal-btn:active {
@@ -288,10 +323,12 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
   width: 330px;
   max-height: 62vh;
   overflow-y: auto;
-  background: var(--dsw-alias-bg-layer-2);
-  border: 1px solid var(--dsw-alias-border-l2);
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--dsw-alias-bg-layer-2), var(--dsw-alias-bg-layer-2)) padding-box,
+    linear-gradient(135deg, rgba(91, 140, 255, 0.9), rgba(124, 92, 255, 0.9)) border-box;
   border-radius: 14px;
-  box-shadow: var(--dsw-shadow-lv3);
+  box-shadow: 0 0 0 1px rgba(91, 140, 255, 0.12), 0 8px 32px rgba(4, 7, 15, 0.28), 0 0 24px rgba(59, 130, 246, 0.22);
   padding: 12px;
   display: none;
   font-size: 12px;
