@@ -193,42 +193,177 @@ body:not([data-ds-dark-theme]) [data-composer-card] {
   background-image: linear-gradient(180deg, rgba(111, 155, 255, 0.75), rgba(141, 112, 255, 0.75));
 }
 
-/* ---------- DeepSeek 鲸鱼娘 background ---------- */
-/* 背景立绘：DeepSeek 娘化角色「鲸鱼娘」（透明底 WebP 内嵌，无遮罩无面板）。
-   素材来源 https://github.com/fornarwhal/deepseek-whale-girl-icon
-   （CC BY-NC-SA 4.0，非商用个人主题使用；角色「溟月」by 上善无形，
-   DeepSeek 二创 by ZipZipPipe，修复 by QYQCAMIAO）。
-   浅色 40% 透明度 / 深色 60%：文字直接坐在半透明立绘上，无缝融合。 */
-body {
-  --ds-crystal-whale: url("data:image/webp;base64,__WHALE_LIGHT__");
+/* ---------- background layer (whale / wallpapers / user images) ---------- */
+/* 背景由一层 fixed 图层承载（z-index:-1，位于应用内容之下），因此可以：
+   - 在“鲸鱼娘 / 壁纸 / 无背景”之间切换（data-mode）
+   - 整层透明度由滑块控制（--ds-bg-opacity 或 inline opacity）
+   鲸鱼娘为透明底 WebP 内嵌（浅色 40% / 深色 60% alpha），素材见 ASSET_LICENSE.md */
+.ds-bg-layer {
+  --ds-whale-img: url("data:image/webp;base64,__WHALE_LIGHT__");
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background-color: var(--dsw-alias-bg-base);
-  background-image: var(--ds-crystal-whale);
+  background-repeat: no-repeat;
+}
+body[data-ds-dark-theme] .ds-bg-layer {
+  --ds-whale-img: url("data:image/webp;base64,__WHALE_DARK__");
+}
+.ds-bg-layer[data-mode="whale"] {
+  background-image: var(--ds-whale-img);
   background-position: calc(100% - 6px) 100%;
   background-size: auto 92vh;
   background-repeat: no-repeat;
 }
-body[data-ds-dark-theme] {
-  --ds-crystal-whale: url("data:image/webp;base64,__WHALE_DARK__");
+/* 壁纸模式：整幅全屏，叠一层全视口径向可读性遮罩（无边缘、无面板框） */
+.ds-bg-layer[data-mode="wallpaper"] {
+  background-image:
+    radial-gradient(120% 100% at 50% 35%,
+      rgba(238, 243, 251, 0.62) 0%,
+      rgba(238, 243, 251, 0.45) 55%,
+      rgba(238, 243, 251, 0.18) 85%,
+      rgba(238, 243, 251, 0) 100%),
+    var(--ds-wall-img, none);
+  background-position: center, center;
+  background-size: cover, cover;
+  background-repeat: no-repeat;
+}
+body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
+  background-image:
+    radial-gradient(120% 100% at 50% 35%,
+      rgba(10, 13, 21, 0.66) 0%,
+      rgba(10, 13, 21, 0.5) 55%,
+      rgba(10, 13, 21, 0.22) 85%,
+      rgba(10, 13, 21, 0) 100%),
+    var(--ds-wall-img, none);
+}
+.ds-bg-layer[data-mode="none"] {
+  background-image: none;
 }
 
-/* the shell frame must be transparent so the body art shows through */
+/* the shell frame must be transparent so the layer shows through */
 [class*="_frame"] {
   background: transparent !important;
 }
 
 /* small screens: shrink the whale */
 @media (max-width: 720px) {
-  body {
+  .ds-bg-layer[data-mode="whale"] {
     background-size: auto 36vh;
-    background-position: calc(100% - 6px) 100%;
   }
 }
 
 /* The conversation root paints an OPAQUE bg-base over the whole center column,
-   hiding the body background. Make it fully transparent — no panel, no
+   hiding the background layer. Make it fully transparent — no panel, no
    vignette, no edges. */
 [data-phase] {
   background: transparent !important;
+}
+
+/* ---------- background switcher UI ---------- */
+.ds-crystal-ui {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 10000;
+  font-family: var(--dsw-font-family);
+}
+.ds-crystal-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--dsw-alias-label-primary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--dsw-shadow-lv2);
+}
+.ds-crystal-btn:hover {
+  background: var(--dsw-alias-interactive-bg-hover-solid);
+}
+.ds-crystal-panel {
+  position: absolute;
+  left: 0;
+  bottom: 48px;
+  width: 330px;
+  max-height: 62vh;
+  overflow-y: auto;
+  background: var(--dsw-alias-bg-layer-2);
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 14px;
+  box-shadow: var(--dsw-shadow-lv3);
+  padding: 12px;
+  display: none;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-primary);
+}
+.ds-crystal-panel.open {
+  display: block;
+}
+.ds-crystal-title {
+  font-weight: 600;
+  margin: 8px 0 6px;
+}
+.ds-crystal-thumbs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.ds-crystal-thumb {
+  height: 56px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid transparent;
+  cursor: pointer;
+  background-color: var(--dsw-alias-interactive-bg-hover);
+}
+.ds-crystal-thumb:hover {
+  border-color: var(--dsw-alias-border-l3);
+}
+.ds-crystal-thumb.active {
+  border-color: var(--dsw-alias-state-business-primary);
+}
+.ds-crystal-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.ds-crystal-row button {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-interactive-bg-hover-solid);
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+}
+.ds-crystal-row button:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+.ds-crystal-opacity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.ds-crystal-opacity input[type="range"] {
+  flex: 1;
+  accent-color: var(--dsw-alias-state-business-primary);
+}
+.ds-crystal-op-val {
+  min-width: 38px;
+  text-align: right;
+  color: var(--dsw-alias-label-secondary);
+}
+.ds-crystal-hint {
+  color: var(--dsw-alias-label-tertiary);
+  margin-top: 10px;
 }
 
 /* Composer seat: keep the fade but end semi-transparent so the whale shows

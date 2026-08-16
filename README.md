@@ -18,7 +18,14 @@
 | Conversation | Soft ambient glow behind the chat column |
 | Scrollbars | Blue-violet floating pill thumb (WebKit) + tinted Firefox thumb |
 | Background | 鲸鱼娘 transparent PNG embedded as WebP (40% alpha light / 60% dark), zero-scrim, seamless |
+| **Background switcher** | 🎨 左下角切换按钮：27 张内置壁纸 + **本地图片上传**（canvas 压缩后持久化）+ **透明度滑块** + localStorage 记忆 |
 | Typography | Nicer UI / code font stacks (full CJK fallbacks) |
+
+### Background switcher / 背景切换
+
+- 点击左下角 **🎨** 按钮打开面板：内置背景缩略图、🐋 鲸鱼娘、无背景、📁 本地图片、透明度滑块
+- **添加自己的背景**：把图片（png/jpg/webp/gif）丢进插件目录 `assets/backgrounds/`，刷新后自动出现在列表（由插件 Node 端伺服，无需重新构建）
+- 本地图片上传会先压缩（最长边 1920px）再存入 localStorage；选择结果与透明度刷新后保留
 
 ## How it works / 原理
 
