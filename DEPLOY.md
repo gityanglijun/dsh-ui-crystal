@@ -1,116 +1,103 @@
-# 部署文档 / Deployment Guide
+﻿# 閮ㄧ讲鏂囨。 / Deployment Guide
 
-如何把 **dsh-ui-crystal** 部署到 DeepSeek Harness 的 `web` profile 上。
-How to deploy **dsh-ui-crystal** into a DeepSeek Harness `web` profile.
+濡備綍鎶?**dsh-ui-crystal** 閮ㄧ讲鍒?DeepSeek Harness 鐨?`web` profile 涓娿€?How to deploy **dsh-ui-crystal** into a DeepSeek Harness `web` profile.
 
 ---
 
-## 1. 概览 / Overview
+## 1. 姒傝 / Overview
 
-dsh-ui-crystal 现在是**官方 bundle 格式插件**：包内 `dsh.bundle.patch` 声明
-（`cordis.patch.yml`）会在安装时**自动激活**——`dsh plugin add` 会把它自动加进
-`dsh.profile.bundles`，下次启动时 patch 层自动插入 loader 行。**无需手动编辑任何
-profile 文件。**
+dsh-ui-crystal 鐜板湪鏄?*瀹樻柟 bundle 鏍煎紡鎻掍欢**锛氬寘鍐?`dsh.bundle.patch` 澹版槑
+锛坄cordis.patch.yml`锛変細鍦ㄥ畨瑁呮椂**鑷姩婵€娲?*鈥斺€擿dsh plugin add` 浼氭妸瀹冭嚜鍔ㄥ姞杩?`dsh.profile.bundles`锛屼笅娆″惎鍔ㄦ椂 patch 灞傝嚜鍔ㄦ彃鍏?loader 琛屻€?*鏃犻渶鎵嬪姩缂栬緫浠讳綍
+profile 鏂囦欢銆?*
 
-| 项 | 说明 |
+| 椤?| 璇存槑 |
 |---|---|
-| 插件类型 | DSH **bundle 客户端插件**（`dsh.bundle.patch` + `dsh.client`，浏览器端纯 CSS） |
-| 部署目标 | `$DSH_HOME/profiles/web`（默认 `~/.dsh/profiles/web`） |
-| 安装 | 一行命令（见下），内部是官方 `dsh plugin` → pnpm |
-| 激活 | 自动（reconcile 加入 `dsh.profile.bundles`），**重启一次**后进入 boot 图 |
-| 热更新 | 重启后改 `client.js` 由 client-hmr 自动热更，无需再重启 |
+| 鎻掍欢绫诲瀷 | DSH **bundle 瀹㈡埛绔彃浠?*锛坄dsh.bundle.patch` + `dsh.client`锛屾祻瑙堝櫒绔函 CSS锛?|
+| 閮ㄧ讲鐩爣 | `$DSH_HOME/profiles/web`锛堥粯璁?`~/.dsh/profiles/web`锛?|
+| 瀹夎 | 涓€琛屽懡浠わ紙瑙佷笅锛夛紝鍐呴儴鏄畼鏂?`dsh plugin` 鈫?pnpm |
+| 婵€娲?| 鑷姩锛坮econcile 鍔犲叆 `dsh.profile.bundles`锛夛紝**閲嶅惎涓€娆?*鍚庤繘鍏?boot 鍥?|
+| 鐑洿鏂?| 閲嶅惎鍚庢敼 `client.js` 鐢?client-hmr 鑷姩鐑洿锛屾棤闇€鍐嶉噸鍚?|
 
 ---
 
-## 2. 前置条件 / Requirements
+## 2. 鍓嶇疆鏉′欢 / Requirements
 
-- `dsh` 在 PATH 上（`dsh --version`）
-- `pnpm` 在 PATH 上（`npm i -g pnpm` 或 corepack）
-- `node` ≥ 18
+- `dsh` 鍦?PATH 涓婏紙`dsh --version`锛?- `pnpm` 鍦?PATH 涓婏紙`npm i -g pnpm` 鎴?corepack锛?- `node` 鈮?18
 
 ---
 
-## 3. 方式 A：一键部署（推荐）/ One-click
+## 3. 鏂瑰紡 A锛氫竴閿儴缃诧紙鎺ㄨ崘锛? One-click
 
 ```sh
-# 拿到代码
-git clone https://github.com/<你的用户名>/dsh-ui-crystal.git
+# 鎷垮埌浠ｇ爜
+git clone https://github.com/<浣犵殑鐢ㄦ埛鍚?/dsh-ui-crystal.git
 cd dsh-ui-crystal
 
-# 一键部署（官方流程 + 自动激活 + 校验）
-node deploy.js
+# 涓€閿儴缃诧紙瀹樻柟娴佺▼ + 鑷姩婵€娲?+ 鏍￠獙锛?node deploy.js
 
-# 重启一次，完成
+# 閲嶅惎涓€娆★紝瀹屾垚
 dsh web
 ```
 
-`deploy.js` 做的事（幂等）：
-1. 前置检查（`dsh` / `pnpm`）
-2. `dsh plugin --profile web add <仓库路径>` → 安装依赖 + **自动加入 bundles**
-3. 校验 `dsh --profile web --dump-config` 含 `ui-crystal`
-4. 打印重启指引
+`deploy.js` 鍋氱殑浜嬶紙骞傜瓑锛夛細
+1. 鍓嶇疆妫€鏌ワ紙`dsh` / `pnpm`锛?2. `dsh plugin --profile web add <浠撳簱璺緞>` 鈫?瀹夎渚濊禆 + **鑷姩鍔犲叆 bundles**
+3. 鏍￠獙 `dsh --profile web --dump-config` 鍚?`ui-crystal`
+4. 鎵撳嵃閲嶅惎鎸囧紩
 
-参数：`--profile <name>`（默认 `web`）、`--skip-pnpm`（只校验不安装）。
-
+鍙傛暟锛歚--profile <name>`锛堥粯璁?`web`锛夈€乣--skip-pnpm`锛堝彧鏍￠獙涓嶅畨瑁咃級銆?
 ---
 
-## 4. 方式 B：纯命令一行部署 / One-liner
+## 4. 鏂瑰紡 B锛氱函鍛戒护涓€琛岄儴缃?/ One-liner
 
-发布到 GitHub 之后（或本地路径）：
+鍙戝竷鍒?GitHub 涔嬪悗锛堟垨鏈湴璺緞锛夛細
 
 ```sh
-# 官方一行安装（git 源 / 本地路径均可，自动激活 bundle）
-dsh plugin --profile web add "github:<你的用户名>/dsh-ui-crystal#main"
-# 本地未发布时：dsh plugin --profile web add /绝对/路径/dsh-ui-crystal
+# 瀹樻柟涓€琛屽畨瑁咃紙git 婧?/ 鏈湴璺緞鍧囧彲锛岃嚜鍔ㄦ縺娲?bundle锛?dsh plugin --profile web add "github:<浣犵殑鐢ㄦ埛鍚?/dsh-ui-crystal#main"
+# 鏈湴鏈彂甯冩椂锛歞sh plugin --profile web add /缁濆/璺緞/dsh-ui-crystal
 
-dsh web        # 重启一次
-```
+dsh web        # 閲嶅惎涓€娆?```
 
-**就这两行。** 不需要改任何配置——`dsh.bundle.patch` 会在启动时自动插入
-`ui-crystal` 行。
-
-更新：`dsh plugin --profile web update dsh-ui-crystal`（换 git ref 时同理），重启生效。
-
+**灏辫繖涓よ銆?* 涓嶉渶瑕佹敼浠讳綍閰嶇疆鈥斺€擿dsh.bundle.patch` 浼氬湪鍚姩鏃惰嚜鍔ㄦ彃鍏?`ui-crystal` 琛屻€?
+鏇存柊锛歚dsh plugin --profile web update dsh-ui-crystal`锛堟崲 git ref 鏃跺悓鐞嗭級锛岄噸鍚敓鏁堛€?
 ---
 
-## 5. 验证 / Verification
+## 5. 楠岃瘉 / Verification
 
-| 检查点 | 方法 | 预期 |
+| 妫€鏌ョ偣 | 鏂规硶 | 棰勬湡 |
 |---|---|---|
-| bundle 已注册 | `cat ~/.dsh/profiles/web/package.json` | `dsh.profile.bundles` 含 `dsh-ui-crystal` |
-| loader 行已生效 | `dsh --profile web --dump-config \| grep ui-crystal` | 输出 `- id: ui-crystal`（来自 `# == dsh-ui-crystal` 层） |
-| 页面已加载插件 | 浏览器控制台<br>`document.querySelector('style[data-plugin-css="dsh-ui-crystal/theme.css"]')` | 返回 `<style>` 元素 |
-| 插件状态正常 | 设置 → 插件列表 | `entryId: ui-crystal` 状态 `active` |
+| bundle 宸叉敞鍐?| `cat ~/.dsh/profiles/web/package.json` | `dsh.profile.bundles` 鍚?`dsh-ui-crystal` |
+| loader 琛屽凡鐢熸晥 | `dsh --profile web --dump-config \| grep ui-crystal` | 杈撳嚭 `- id: ui-crystal`锛堟潵鑷?`# == dsh-ui-crystal` 灞傦級 |
+| 椤甸潰宸插姞杞芥彃浠?| 娴忚鍣ㄦ帶鍒跺彴<br>`document.querySelector('style[data-plugin-css="dsh-ui-crystal/theme.css"]')` | 杩斿洖 `<style>` 鍏冪礌 |
+| 鎻掍欢鐘舵€佹甯?| 璁剧疆 鈫?鎻掍欢鍒楄〃 | `entryId: ui-crystal` 鐘舵€?`active` |
 
 ---
 
-## 6. 常见问题 / Troubleshooting
+## 6. 甯歌闂 / Troubleshooting
 
-| 症状 | 原因 | 解决 |
+| 鐥囩姸 | 鍘熷洜 | 瑙ｅ喅 |
 |---|---|---|
-| `dsh: command not found` | dsh 不在 PATH | 安装 DeepSeek Harness 或加入 PATH |
-| `pnpm not found on PATH` | 未装 pnpm | `npm i -g pnpm` 或 corepack |
-| 页面无变化 | 没重启 / 浏览器缓存 | 重启 `dsh web` + **Ctrl+Shift+R** |
-| `ui-crystal` 在插件列表里 failed | 旧版本缺 host 入口 | 拉最新代码 `node build.js` 重新部署（当前版本有 `index.js`） |
-| 改了 `client.js` 没反应 | HMR 未触发或页面旧 | 等 1 秒或 F5 |
-| 改了 bundle patch 没反应 | 启动时才合成 | 重启 `dsh web` |
-| 小屏看不到鲸鱼 | 视口 < 720px | 桌面窗口查看 |
+| `dsh: command not found` | dsh 涓嶅湪 PATH | 瀹夎 DeepSeek Harness 鎴栧姞鍏?PATH |
+| `pnpm not found on PATH` | 鏈 pnpm | `npm i -g pnpm` 鎴?corepack |
+| 椤甸潰鏃犲彉鍖?| 娌￠噸鍚?/ 娴忚鍣ㄧ紦瀛?| 閲嶅惎 `dsh web` + **Ctrl+Shift+R** |
+| `ui-crystal` 鍦ㄦ彃浠跺垪琛ㄩ噷 failed | 鏃х増鏈己 host 鍏ュ彛 | 鎷夋渶鏂颁唬鐮?`node build.js` 閲嶆柊閮ㄧ讲锛堝綋鍓嶇増鏈湁 `index.js`锛?|
+| 鏀逛簡 `client.js` 娌″弽搴?| HMR 鏈Е鍙戞垨椤甸潰鏃?| 绛?1 绉掓垨 F5 |
+| 鏀逛簡 bundle patch 娌″弽搴?| 鍚姩鏃舵墠鍚堟垚 | 閲嶅惎 `dsh web` |
+| 灏忓睆鐪嬩笉鍒伴哺楸?| 瑙嗗彛 < 720px | 妗岄潰绐楀彛鏌ョ湅 |
 
 ---
 
-## 7. 卸载 / Uninstall
+## 7. 鍗歌浇 / Uninstall
 
 ```sh
 dsh plugin --profile web remove dsh-ui-crystal
-dsh web        # 重启
+dsh web        # 閲嶅惎
 ```
 
-（bundle 行随依赖移除自动消失，无需手动清理 profile 文件。）
+锛坆undle 琛岄殢渚濊禆绉婚櫎鑷姩娑堝け锛屾棤闇€鎵嬪姩娓呯悊 profile 鏂囦欢銆傦級
 
 ---
 
-## 8. 日常迭代 / Iteration
+## 8. 鏃ュ父杩唬 / Iteration
 
-- 改样式：`src/styles.css` → `node build.js` → 浏览器自动热更
-- 换鲸鱼图：替换 `assets/whale-light.webp` / `assets/whale-dark.webp` → `node build.js`
-- 本机已部署（pnpm `link:` 指向仓库）：`node build.js` 后即生效，无需重装
+- 鏀规牱寮忥細`src/styles.css` 鈫?`node build.js` 鈫?娴忚鍣ㄨ嚜鍔ㄧ儹鏇?- 鎹㈤哺楸煎浘锛氭浛鎹?`assets/whale-light.webp` / `assets/whale-dark.webp` 鈫?`node build.js`
+- 鏈満宸查儴缃诧紙pnpm `link:` 鎸囧悜浠撳簱锛夛細`node build.js` 鍚庡嵆鐢熸晥锛屾棤闇€閲嶈
