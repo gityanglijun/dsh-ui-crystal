@@ -412,6 +412,32 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
   margin-top: 10px;
 }
 
+/* ---------- whale desktop pet ---------- */
+.ds-pet {
+  position: fixed;
+  right: 24px;
+  bottom: 130px;
+  width: 200px;
+  aspect-ratio: 466 / 630;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: contain;
+  cursor: grab;
+  z-index: 9999;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ds-pet:active {
+  cursor: grabbing;
+}
+.ds-crystal-petrow {
+  flex-wrap: wrap;
+}
+.ds-crystal-petrow button {
+  flex: 0 0 auto;
+}
+
 /* Composer seat: keep the fade but end semi-transparent so the whale shows
    through the seat's lower area instead of a solid wall. */
 [data-composer-seat] {

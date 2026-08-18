@@ -18,10 +18,12 @@ export const inject = ["webServer"];
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const BG_DIR = join(PKG_DIR, "assets", "backgrounds");
+const PET_DIR = join(PKG_DIR, "assets", "pet");
 
 const ROUTE_PREFIX = "/ds-crystal";
 const ASSETS_PATH = `${ROUTE_PREFIX}/assets`;
 const LIST_PATH = `${ROUTE_PREFIX}/backgrounds`;
+const PET_PATH = `${ROUTE_PREFIX}/pet`;
 
 const MIME = {
   ".png": "image/png",
@@ -29,14 +31,16 @@ const MIME = {
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".gif": "image/gif",
+  ".mp4": "video/mp4",
 };
 
 const IMG_RE = /\.(png|jpe?g|webp|gif)$/i;
 
 /** Extract a safe relative path under the assets prefix; null when invalid. */
-function sanitizeAssetPath(pathname) {
-  if (!pathname.startsWith(`${ASSETS_PATH}/`)) return null;
-  const rel = pathname.slice(ASSETS_PATH.length + 1);
+/** Extract a safe relative path under a route prefix; null when invalid. */
+function sanitizeRoutePath(pathname, prefix) {
+  if (!pathname.startsWith(`${prefix}/`)) return null;
+  const rel = pathname.slice(prefix.length + 1);
   if (rel === "" || rel.includes("\0")) return null;
   for (const seg of rel.split("/")) {
     if (seg === "" || seg === "." || seg === ".." || seg.includes("\\")) return null;
@@ -60,39 +64,41 @@ function json(res, status, body, headers = {}) {
   res.end(payload);
 }
 
+/** Serve one file from a directory, sanitized against path traversal. */
+function serveFrom(dir, prefix) {
+  return async (req, res) => {
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      res.writeHead(405);
+      res.end();
+      return;
+    }
+    const pathname = decodeURIComponent(new URL(req.url ?? "/", "http://x").pathname);
+    const rel = sanitizeRoutePath(pathname, prefix);
+    if (rel === null) {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+    try {
+      const body = readFileSync(join(dir, ...rel.split("/")));
+      res.writeHead(200, {
+        "content-type": contentTypeFor(rel),
+        "cache-control": "no-cache",
+      });
+      res.end(body);
+    } catch {
+      res.writeHead(404);
+      res.end();
+    }
+  };
+}
+
 /** Host loader entry: register the asset + listing routes when a web server exists. */
 export function apply(ctx) {
   if (ctx.webServer === undefined) return;
   ctx.effect(() => {
-    ctx.webServer.register({
-      kind: "prefix",
-      path: ASSETS_PATH,
-      handler: async (req, res) => {
-        if (req.method !== "GET" && req.method !== "HEAD") {
-          res.writeHead(405);
-          res.end();
-          return;
-        }
-        const pathname = decodeURIComponent(new URL(req.url ?? "/", "http://x").pathname);
-        const rel = sanitizeAssetPath(pathname);
-        if (rel === null) {
-          res.writeHead(404);
-          res.end();
-          return;
-        }
-        try {
-          const body = readFileSync(join(BG_DIR, ...rel.split("/")));
-          res.writeHead(200, {
-            "content-type": contentTypeFor(rel),
-            "cache-control": "no-cache",
-          });
-          res.end(body);
-        } catch {
-          res.writeHead(404);
-          res.end();
-        }
-      },
-    });
+    ctx.webServer.register({ kind: "prefix", path: ASSETS_PATH, handler: serveFrom(BG_DIR, ASSETS_PATH) });
+    ctx.webServer.register({ kind: "prefix", path: PET_PATH, handler: serveFrom(PET_DIR, PET_PATH) });
     ctx.webServer.register({
       kind: "exact",
       path: LIST_PATH,

@@ -427,6 +427,32 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
   margin-top: 10px;
 }
 
+/* ---------- whale desktop pet ---------- */
+.ds-pet {
+  position: fixed;
+  right: 24px;
+  bottom: 130px;
+  width: 200px;
+  aspect-ratio: 466 / 630;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: contain;
+  cursor: grab;
+  z-index: 9999;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ds-pet:active {
+  cursor: grabbing;
+}
+.ds-crystal-petrow {
+  flex-wrap: wrap;
+}
+.ds-crystal-petrow button {
+  flex: 0 0 auto;
+}
+
 /* Composer seat: keep the fade but end semi-transparent so the whale shows
    through the seat's lower area instead of a solid wall. */
 [data-composer-seat] {
@@ -616,6 +642,89 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		opRow.appendChild(opLabel);
 		opRow.appendChild(slider);
 		opRow.appendChild(opVal);
+		// ---- whale desktop pet (animated WebP sprites) ----
+		var PET_STATES = ["idle", "walk", "dance", "eat", "wave", "kick", "punish"];
+		var petState = { enabled: true, anim: "idle", x: null, y: null };
+		try {
+			var savedPet = JSON.parse(localStorage.getItem("ds-crystal-pet") || "null");
+			if (savedPet && typeof savedPet === "object") petState = savedPet;
+		} catch (e8) {}
+		var pet = document.createElement("div");
+		pet.className = "ds-pet";
+		pet.title = "鲸鱼桌宠：点击打开面板，按住可拖动";
+		document.body.appendChild(pet);
+		function persistPet() { try { localStorage.setItem("ds-crystal-pet", JSON.stringify(petState)); } catch (e9) {} }
+		function applyPet() {
+			var tog = document.querySelector(".ds-crystal-pettoggle");
+			if (tog) tog.textContent = petState.enabled ? "✅ 桌宠开" : "⛔ 桌宠关";
+			pet.style.display = petState.enabled ? "block" : "none";
+			if (!petState.enabled) return;
+			var anim = PET_STATES.indexOf(petState.anim) >= 0 ? petState.anim : "idle";
+			var url = "/ds-crystal/pet/pet-" + anim + ".webp";
+			if (pet.dataset.src !== url) {
+				pet.dataset.src = url;
+				pet.style.backgroundImage = 'url("' + url + '")';
+			}
+			if (petState.x !== null && petState.y !== null) {
+				pet.style.left = petState.x + "px";
+				pet.style.top = petState.y + "px";
+			}
+			var pbs = document.querySelectorAll(".ds-crystal-petbtn");
+			for (var pi = 0; pi < pbs.length; pi++) pbs[pi].classList.toggle("active", pbs[pi].dataset.anim === petState.anim);
+		}
+		var petDrag = false;
+		pet.addEventListener("pointerdown", function (e) {
+			var r = pet.getBoundingClientRect();
+			pet._dx = e.clientX - r.left;
+			pet._dy = e.clientY - r.top;
+			pet._sx = e.clientX;
+			pet._sy = e.clientY;
+			try { pet.setPointerCapture(e.pointerId); } catch (e10) {}
+		});
+		pet.addEventListener("pointermove", function (e) {
+			if (pet._sx === undefined) return;
+			var nx = e.clientX - pet._dx;
+			var ny = e.clientY - pet._dy;
+			nx = Math.max(4, Math.min(nx, window.innerWidth - 130));
+			ny = Math.max(4, Math.min(ny, window.innerHeight - 170));
+			pet.style.left = nx + "px";
+			pet.style.top = ny + "px";
+		});
+		pet.addEventListener("pointerup", function (e) {
+			if (pet._sx !== undefined && Math.abs(e.clientX - pet._sx) + Math.abs(e.clientY - pet._sy) > 5) petDrag = true;
+			pet._sx = undefined;
+			petState.x = parseFloat(pet.style.left);
+			petState.y = parseFloat(pet.style.top);
+			persistPet();
+		});
+		pet.addEventListener("click", function () {
+			if (petDrag) { petDrag = false; return; }
+			panel.classList.toggle("open");
+		});
+		// pet controls in the switcher panel
+		var petTitle = document.createElement("div");
+		petTitle.className = "ds-crystal-title";
+		petTitle.textContent = "🐋 桌宠";
+		var petRow = document.createElement("div");
+		petRow.className = "ds-crystal-row ds-crystal-petrow";
+		PET_STATES.forEach(function (s) {
+			var b = document.createElement("button");
+			b.className = "ds-crystal-petbtn";
+			b.dataset.anim = s;
+			b.textContent = s;
+			b.addEventListener("click", function () { petState.anim = s; petState.enabled = true; persistPet(); applyPet(); });
+			petRow.appendChild(b);
+		});
+		var petToggle = document.createElement("button");
+		petToggle.className = "ds-crystal-pettoggle";
+		petToggle.addEventListener("click", function () { petState.enabled = !petState.enabled; persistPet(); applyPet(); });
+		var petToggleRow = document.createElement("div");
+		petToggleRow.className = "ds-crystal-row";
+		petToggleRow.appendChild(petToggle);
+		panel.appendChild(petTitle);
+		panel.appendChild(petRow);
+		panel.appendChild(petToggleRow);
+		applyPet();
 		var hint = document.createElement("div");
 		hint.className = "ds-crystal-hint";
 		hint.textContent = "💡 更多背景：把图片放进插件目录 assets/backgrounds/ 即自动出现在列表；或点“本地图片”直接选择。";
