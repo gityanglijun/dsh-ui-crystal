@@ -243,14 +243,17 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 			pet.style.display = petState.enabled ? "block" : "none";
 			if (!petState.enabled) return;
 			var anim = PET_STATES.indexOf(petState.anim) >= 0 ? petState.anim : "idle";
-			var url = "/ds-crystal/pet/pet-" + anim + ".webp";
+			// 走路朝右用预生成的镜像精灵（pet-walk-r.webp），不再用 CSS transform 镜像，
+			// 避免 scale 原点导致的视觉位置偏移（走路↔idle 衔接闪现）
+			var file = anim === "walk" && petState.dir === "r" ? "pet-walk-r" : "pet-" + anim;
+			var url = "/ds-crystal/pet/" + file + ".webp";
 			if (pet.dataset.src !== url) {
 				pet.dataset.src = url;
 				pet.style.backgroundImage = 'url("' + url + '")';
 			}
-			// 大小缩放 × 走路朝右镜像（源动画朝左）
+			// 仅大小缩放（transform-origin 0 0，布局=视觉，拖拽无跳变）
 			var sc = petState.scale > 0 ? petState.scale : 0.73;
-			pet.style.transform = "scale(" + sc + ")" + (anim === "walk" && petState.dir === "r" ? " scaleX(-1)" : "");
+			pet.style.transform = "scale(" + sc + ")";
 			if (petState.x === null || petState.y === null) {
 				petState.x = petDefaultX();
 				petState.y = petDefaultY();
