@@ -428,15 +428,16 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
 }
 
 /* ---------- whale desktop pet ---------- */
+/* 所有动画已归一化到 380x240 画布（鲸鱼统一高 200px） */
 .ds-pet {
   position: fixed;
   right: 24px;
   bottom: 130px;
-  width: 200px;
-  aspect-ratio: 466 / 630;
+  width: 380px;
+  height: 240px;
   background-repeat: no-repeat;
-  background-position: center bottom;
-  background-size: contain;
+  background-position: center;
+  background-size: 100% 100%;
   cursor: grab;
   z-index: 9999;
   touch-action: none;
@@ -642,21 +643,35 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		opRow.appendChild(opLabel);
 		opRow.appendChild(slider);
 		opRow.appendChild(opVal);
-		// ---- whale desktop pet (animated WebP sprites) ----
-		var PET_STATES = ["idle", "walk", "dance", "eat", "wave", "kick", "punish"];
-		var petState = { enabled: true, anim: "idle", x: null, y: null };
+		// ---- whale desktop pet (state machine + animated WebP sprites) ----
+		var PET_STATES = ["idle", "walk", "dance", "eat", "wave", "kick", "punish", "sleep"];
+		var petState = { enabled: true, anim: "idle", dir: "l", x: null, y: null };
 		try {
 			var savedPet = JSON.parse(localStorage.getItem("ds-crystal-pet") || "null");
 			if (savedPet && typeof savedPet === "object") petState = savedPet;
+			if (PET_STATES.indexOf(petState.anim) < 0 || petState.anim === "walk") petState.anim = "idle";
 		} catch (e8) {}
 		var pet = document.createElement("div");
 		pet.className = "ds-pet";
 		pet.title = "鲸鱼桌宠：点击打开面板，按住可拖动";
 		document.body.appendChild(pet);
+		var petTimers = [];
+		var walkTimer = null;
 		function persistPet() { try { localStorage.setItem("ds-crystal-pet", JSON.stringify(petState)); } catch (e9) {} }
+		function clearPetTimers() {
+			for (var t = 0; t < petTimers.length; t++) clearTimeout(petTimers[t]);
+			petTimers = [];
+			if (walkTimer) { clearInterval(walkTimer); walkTimer = null; }
+		}
+		function rand(a, b) { return a + Math.random() * (b - a); }
+		function petDefaultX() { return Math.max(4, window.innerWidth - 404); }
+		function petDefaultY() { return Math.max(4, window.innerHeight - 250); }
 		function applyPet() {
 			var tog = document.querySelector(".ds-crystal-pettoggle");
 			if (tog) tog.textContent = petState.enabled ? "✅ 桌宠开" : "⛔ 桌宠关";
+			// 桌宠开启时它本身就是入口：隐藏 🎨 按钮，避免双控件占屏
+			var bbtn = document.querySelector(".ds-crystal-btn");
+			if (bbtn) bbtn.style.display = petState.enabled ? "none" : "";
 			pet.style.display = petState.enabled ? "block" : "none";
 			if (!petState.enabled) return;
 			var anim = PET_STATES.indexOf(petState.anim) >= 0 ? petState.anim : "idle";
@@ -665,15 +680,66 @@ body[data-ds-dark-theme] [data-composer-seat] {
 				pet.dataset.src = url;
 				pet.style.backgroundImage = 'url("' + url + '")';
 			}
-			if (petState.x !== null && petState.y !== null) {
-				pet.style.left = petState.x + "px";
-				pet.style.top = petState.y + "px";
+			// 走路朝右时镜像（源动画朝左）
+			pet.style.transform = anim === "walk" && petState.dir === "r" ? "scaleX(-1)" : "";
+			if (petState.x === null || petState.y === null) {
+				petState.x = petDefaultX();
+				petState.y = petDefaultY();
 			}
+			pet.style.left = petState.x + "px";
+			pet.style.top = petState.y + "px";
 			var pbs = document.querySelectorAll(".ds-crystal-petbtn");
 			for (var pi = 0; pi < pbs.length; pi++) pbs[pi].classList.toggle("active", pbs[pi].dataset.anim === petState.anim);
 		}
+		// ---- 状态机：idle -> 随机散步 -> idle -> 久置入睡 ----
+		function petGotoIdle() {
+			clearPetTimers();
+			setPetAnim("idle");
+			petTimers.push(setTimeout(petMaybeWalk, rand(6000, 14000)));
+			petTimers.push(setTimeout(petGoSleep, 60000));
+		}
+		function setPetAnim(anim) {
+			petState.anim = anim;
+			applyPet();
+			persistPet();
+		}
+		function petMaybeWalk() {
+			if (!petState.enabled || petState.anim === "sleep") return;
+			petState.dir = Math.random() < 0.5 ? "l" : "r";
+			setPetAnim("walk");
+			walkTimer = setInterval(petWalkStep, 66);
+			petTimers.push(setTimeout(petStopWalk, rand(2500, 6000)));
+		}
+		function petWalkStep() {
+			if (!petState.enabled || petState.anim !== "walk") { if (walkTimer) { clearInterval(walkTimer); walkTimer = null; } return; }
+			if (petState.x === null) petState.x = petDefaultX();
+			var speed = 2.2;
+			var nx = petState.x + (petState.dir === "r" ? speed : -speed);
+			var maxX = Math.max(4, window.innerWidth - 384);
+			if (nx <= 4) { nx = 4; petState.dir = "r"; applyPet(); }
+			else if (nx >= maxX) { nx = maxX; petState.dir = "l"; applyPet(); }
+			petState.x = nx;
+			pet.style.left = nx + "px";
+			persistPet();
+		}
+		function petStopWalk() { if (petState.anim === "walk") petGotoIdle(); }
+		function petGoSleep() {
+			if (!petState.enabled || petState.anim !== "idle") return;
+			clearPetTimers();
+			setPetAnim("sleep");
+		}
+		function petWake() { if (petState.anim === "sleep") petGotoIdle(); }
+		function petPlayOnce(anim) {
+			clearPetTimers();
+			petState.anim = anim;
+			applyPet();
+			persistPet();
+			petTimers.push(setTimeout(petGotoIdle, anim === "dance" || anim === "punish" ? 5000 : 4000));
+		}
+		// drag（点击醒睡 + 开面板）
 		var petDrag = false;
 		pet.addEventListener("pointerdown", function (e) {
+			petWake();
 			var r = pet.getBoundingClientRect();
 			pet._dx = e.clientX - r.left;
 			pet._dy = e.clientY - r.top;
@@ -685,8 +751,8 @@ body[data-ds-dark-theme] [data-composer-seat] {
 			if (pet._sx === undefined) return;
 			var nx = e.clientX - pet._dx;
 			var ny = e.clientY - pet._dy;
-			nx = Math.max(4, Math.min(nx, window.innerWidth - 130));
-			ny = Math.max(4, Math.min(ny, window.innerHeight - 170));
+			nx = Math.max(4, Math.min(nx, window.innerWidth - 384));
+			ny = Math.max(4, Math.min(ny, window.innerHeight - 244));
 			pet.style.left = nx + "px";
 			pet.style.top = ny + "px";
 		});
@@ -699,9 +765,10 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		});
 		pet.addEventListener("click", function () {
 			if (petDrag) { petDrag = false; return; }
+			petWake();
 			panel.classList.toggle("open");
 		});
-		// pet controls in the switcher panel
+		// 面板桌宠控制
 		var petTitle = document.createElement("div");
 		petTitle.className = "ds-crystal-title";
 		petTitle.textContent = "🐋 桌宠";
@@ -712,19 +779,31 @@ body[data-ds-dark-theme] [data-composer-seat] {
 			b.className = "ds-crystal-petbtn";
 			b.dataset.anim = s;
 			b.textContent = s;
-			b.addEventListener("click", function () { petState.anim = s; petState.enabled = true; persistPet(); applyPet(); });
+			b.addEventListener("click", function () {
+				petState.enabled = true;
+				if (s === "walk") petMaybeWalk();
+				else if (s === "sleep") { clearPetTimers(); setPetAnim("sleep"); }
+				else if (s === "idle") petGotoIdle();
+				else petPlayOnce(s);
+				applyPet();
+			});
 			petRow.appendChild(b);
 		});
 		var petToggle = document.createElement("button");
 		petToggle.className = "ds-crystal-pettoggle";
-		petToggle.addEventListener("click", function () { petState.enabled = !petState.enabled; persistPet(); applyPet(); });
+		petToggle.addEventListener("click", function () {
+			petState.enabled = !petState.enabled;
+			clearPetTimers();
+			if (petState.enabled) petGotoIdle();
+			persistPet();
+			applyPet();
+		});
 		var petToggleRow = document.createElement("div");
 		petToggleRow.className = "ds-crystal-row";
 		petToggleRow.appendChild(petToggle);
 		panel.appendChild(petTitle);
 		panel.appendChild(petRow);
 		panel.appendChild(petToggleRow);
-		applyPet();
 		var hint = document.createElement("div");
 		hint.className = "ds-crystal-hint";
 		hint.textContent = "💡 更多背景：把图片放进插件目录 assets/backgrounds/ 即自动出现在列表；或点“本地图片”直接选择。";
@@ -737,6 +816,9 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		ui.appendChild(btn);
 		ui.appendChild(panel);
 		document.body.appendChild(ui);
+		// pet 初始化：等 ui 挂载后再跑，确保 🎨 按钮/面板控件可被查到
+		applyPet();
+		if (petState.enabled) petGotoIdle();
 		// restore saved position
 		try {
 			var pos = JSON.parse(localStorage.getItem("ds-crystal-pos") || "null");

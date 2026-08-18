@@ -1,4 +1,4 @@
-﻿# dsh-ui-crystal 🐋💎
+# dsh-ui-crystal 🐋💎
 
 > Crystal — a polished blue-violet UI theme for the **DeepSeek Harness** web shell, featuring the DeepSeek **鲸鱼娘 (whale-girl)** as a seamless background companion.
 >
@@ -19,7 +19,15 @@
 | Scrollbars | Blue-violet floating pill thumb (WebKit) + tinted Firefox thumb |
 | Background | 鲸鱼娘 transparent PNG embedded as WebP (40% alpha light / 60% dark), zero-scrim, seamless |
 | **Background switcher** | 🎨 可拖动按钮：27 张内置透明壁纸 + **本地图片上传**（canvas 压缩后持久化）+ **透明度滑块** + **角落/全屏**展示方式 + localStorage 记忆 |
+| **桌面宠物** | 🐋 7 个透明动画（idle/walk/dance/eat/wave/kick/punish，AE 渲染 PNG 序列→动画 WebP），**状态机**自动切换（闲逛→散步移动→久置入睡），走路带位移 + 镜像朝两个方向，可拖动，点击唤出面板 |
 | Typography | Nicer UI / code font stacks (full CJK fallbacks) |
+
+### Desktop pet / 桌宠
+
+- 默认开启：右下角鲸鱼，**idle 呼吸 → 随机散步（带位移、左右镜像）→ 久置入睡**；点击/拖动即唤醒
+- **桌宠开启时 🎨 按钮自动隐藏**（桌宠本身是入口，点击唤出面板），关闭桌宠后按钮恢复——避免双控件占屏
+- 面板「🐋 桌宠」区：8 个状态按钮（idle/walk/dance/eat/wave/kick/punish/sleep）+ ✅/⛔ 开关
+- 所有动画统一归一化（鲸鱼高 200px、380×240 画布），显示大小一致
 
 ### Background switcher / 背景切换
 
