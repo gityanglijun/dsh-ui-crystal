@@ -209,11 +209,12 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 		opRow.appendChild(opVal);
 		// ---- whale desktop pet (state machine + animated WebP sprites) ----
 		var PET_STATES = ["idle", "walk", "dance", "eat", "wave", "kick", "punish", "sleep"];
-		var petState = { enabled: true, anim: "idle", dir: "l", x: null, y: null };
+		var petState = { enabled: true, anim: "idle", dir: "l", x: null, y: null, scale: 0.73 };
 		try {
 			var savedPet = JSON.parse(localStorage.getItem("ds-crystal-pet") || "null");
 			if (savedPet && typeof savedPet === "object") petState = savedPet;
 			if (PET_STATES.indexOf(petState.anim) < 0 || petState.anim === "walk") petState.anim = "idle";
+			if (typeof petState.scale !== "number" || petState.scale <= 0) petState.scale = 0.73;
 		} catch (e8) {}
 		var pet = document.createElement("div");
 		pet.className = "ds-pet";
@@ -228,8 +229,11 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 			if (walkTimer) { clearInterval(walkTimer); walkTimer = null; }
 		}
 		function rand(a, b) { return a + Math.random() * (b - a); }
-		function petDefaultX() { return Math.max(4, window.innerWidth - 524); }
-		function petDefaultY() { return Math.max(4, window.innerHeight - 344); }
+		// 桌宠实际显示尺寸（受 scale 影响）
+		function petVisualW() { return Math.round((pet.getBoundingClientRect().width || 520)); }
+		function petVisualH() { return Math.round((pet.getBoundingClientRect().height || 340)); }
+		function petDefaultX() { return Math.max(4, window.innerWidth - petVisualW() - 24); }
+		function petDefaultY() { return Math.max(4, window.innerHeight - petVisualH() - 10); }
 		function applyPet() {
 			var tog = document.querySelector(".ds-crystal-pettoggle");
 			if (tog) tog.textContent = petState.enabled ? "✅ 桌宠开" : "⛔ 桌宠关";
@@ -244,8 +248,9 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 				pet.dataset.src = url;
 				pet.style.backgroundImage = 'url("' + url + '")';
 			}
-			// 走路朝右时镜像（源动画朝左）
-			pet.style.transform = anim === "walk" && petState.dir === "r" ? "scaleX(-1)" : "";
+			// 大小缩放 × 走路朝右镜像（源动画朝左）
+			var sc = petState.scale > 0 ? petState.scale : 0.73;
+			pet.style.transform = "scale(" + sc + ")" + (anim === "walk" && petState.dir === "r" ? " scaleX(-1)" : "");
 			if (petState.x === null || petState.y === null) {
 				petState.x = petDefaultX();
 				petState.y = petDefaultY();
@@ -254,6 +259,10 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 			pet.style.top = petState.y + "px";
 			var pbs = document.querySelectorAll(".ds-crystal-petbtn");
 			for (var pi = 0; pi < pbs.length; pi++) pbs[pi].classList.toggle("active", pbs[pi].dataset.anim === petState.anim);
+			var ss = document.querySelector(".ds-crystal-petsize input");
+			if (ss) ss.value = sc;
+			var sl = document.querySelector(".ds-crystal-petsize-val");
+			if (sl) sl.textContent = Math.round(sc * 100) + "%";
 		}
 		// ---- 状态机：idle -> 加权随机动作（散步/舞蹈/挥手/吃东西/踢/惩罚）-> 无操作 90s 入睡 ----
 		// 频率：walk 42% / dance 10% / wave 9% / eat 9% / kick 7% / punish 5% / 继续 idle 18%（每次 idle 间隔 4-10s）
@@ -291,7 +300,7 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 			if (petState.x === null) petState.x = petDefaultX();
 			var speed = 2.2;
 			var nx = petState.x + (petState.dir === "r" ? speed : -speed);
-			var maxX = Math.max(4, window.innerWidth - 524);
+			var maxX = Math.max(4, window.innerWidth - petVisualW());
 			if (nx <= 4) { nx = 4; petState.dir = "r"; applyPet(); }
 			else if (nx >= maxX) { nx = maxX; petState.dir = "l"; applyPet(); }
 			petState.x = nx;
@@ -337,8 +346,8 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 			if (pet._sx === undefined) return;
 			var nx = e.clientX - pet._dx;
 			var ny = e.clientY - pet._dy;
-			nx = Math.max(4, Math.min(nx, window.innerWidth - 524));
-			ny = Math.max(4, Math.min(ny, window.innerHeight - 344));
+			nx = Math.max(4, Math.min(nx, window.innerWidth - petVisualW()));
+			ny = Math.max(4, Math.min(ny, window.innerHeight - petVisualH()));
 			pet.style.left = nx + "px";
 			pet.style.top = ny + "px";
 		});
@@ -393,6 +402,25 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 			});
 			petRow.appendChild(b);
 		});
+		var petSizeRow = document.createElement("div");
+		petSizeRow.className = "ds-crystal-opacity ds-crystal-petsize";
+		var petSizeLabel = document.createElement("span");
+		petSizeLabel.textContent = "大小";
+		var petSizeSlider = document.createElement("input");
+		petSizeSlider.type = "range";
+		petSizeSlider.min = "0.4";
+		petSizeSlider.max = "1.5";
+		petSizeSlider.step = "0.05";
+		var petSizeVal = document.createElement("span");
+		petSizeVal.className = "ds-crystal-petsize-val";
+		petSizeSlider.addEventListener("input", function () {
+			petState.scale = parseFloat(petSizeSlider.value);
+			applyPet();
+			persistPet();
+		});
+		petSizeRow.appendChild(petSizeLabel);
+		petSizeRow.appendChild(petSizeSlider);
+		petSizeRow.appendChild(petSizeVal);
 		var petToggle = document.createElement("button");
 		petToggle.className = "ds-crystal-pettoggle";
 		petToggle.addEventListener("click", function () {
@@ -407,6 +435,7 @@ const RUNTIME = `		// ---- background layer + background switcher ----
 		petToggleRow.appendChild(petToggle);
 		panel.appendChild(petTitle);
 		panel.appendChild(petRow);
+		panel.appendChild(petSizeRow);
 		panel.appendChild(petToggleRow);
 		var hint = document.createElement("div");
 		hint.className = "ds-crystal-hint";
