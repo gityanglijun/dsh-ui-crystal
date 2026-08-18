@@ -6,6 +6,7 @@
 
 ![Light](assets/screenshots/light.png)
 ![Dark](assets/screenshots/dark.png)
+![Desktop pet](assets/screenshots/pet-demo.png)
 
 ## Features / 特性
 
