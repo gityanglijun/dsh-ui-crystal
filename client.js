@@ -547,6 +547,12 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		});
 		btn.addEventListener("click", function () {
 			if (dragMoved) { dragMoved = false; return; }
+			// 按钮路径：面板回到按钮锚定（清除桌宠路径留下的 fixed 覆盖）
+			panel.style.position = "";
+			panel.style.left = "";
+			panel.style.top = "";
+			panel.style.bottom = "";
+			panel.classList.remove("down");
 			panel.classList.toggle("open");
 			if (panel.classList.contains("open")) panel.classList.toggle("down", ui.getBoundingClientRect().top < 260);
 		});
@@ -766,7 +772,24 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		pet.addEventListener("click", function () {
 			if (petDrag) { petDrag = false; return; }
 			petWake();
+			// 桌宠路径：面板锚定到桌宠旁边（上方优先，空间不足展开到下方），避免挡住桌宠
+			var pr = pet.getBoundingClientRect();
+			var pw = 330;
+			var ph = window.innerHeight * 0.62;
+			panel.style.position = "fixed";
+			panel.style.left = Math.max(8, Math.min(pr.left + pr.width / 2 - pw / 2, window.innerWidth - pw - 8)) + "px";
+			panel.style.width = pw + "px";
+			panel.classList.remove("down");
 			panel.classList.toggle("open");
+			if (panel.classList.contains("open")) {
+				if (pr.top - 12 - ph < 8) {
+					panel.style.top = (pr.bottom + 12) + "px";
+					panel.style.bottom = "auto";
+				} else {
+					panel.style.top = "auto";
+					panel.style.bottom = (window.innerHeight - pr.top + 12) + "px";
+				}
+			}
 		});
 		// 面板桌宠控制
 		var petTitle = document.createElement("div");
