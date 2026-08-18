@@ -420,6 +420,7 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
   bottom: 130px;
   width: 520px;
   height: 340px;
+  transform-origin: 0 0;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;

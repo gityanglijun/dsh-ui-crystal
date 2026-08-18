@@ -435,6 +435,7 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
   bottom: 130px;
   width: 520px;
   height: 340px;
+  transform-origin: 0 0;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;
@@ -778,6 +779,11 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		pet.addEventListener("pointerdown", function (e) {
 			petWake();
 			var r = pet.getBoundingClientRect();
+			// 先把当前位置固化为 left/top，再清掉 right/bottom——避免定位回退到静态位置造成闪现
+			pet.style.left = r.left + "px";
+			pet.style.top = r.top + "px";
+			pet.style.right = "auto";
+			pet.style.bottom = "auto";
 			pet._dx = e.clientX - r.left;
 			pet._dy = e.clientY - r.top;
 			pet._sx = e.clientX;
@@ -803,24 +809,16 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		pet.addEventListener("click", function () {
 			if (petDrag) { petDrag = false; return; }
 			petWake();
-			// 桌宠路径：面板锚定到桌宠旁边（上方优先，空间不足展开到下方），避免挡住桌宠
+			// 桌宠路径：面板始终展开在桌宠上方（不做智能位置判断）
 			var pr = pet.getBoundingClientRect();
 			var pw = 330;
-			var ph = window.innerHeight * 0.62;
 			panel.style.position = "fixed";
 			panel.style.left = Math.max(8, Math.min(pr.left + pr.width / 2 - pw / 2, window.innerWidth - pw - 8)) + "px";
 			panel.style.width = pw + "px";
+			panel.style.top = "auto";
+			panel.style.bottom = (window.innerHeight - pr.top + 12) + "px";
 			panel.classList.remove("down");
 			panel.classList.toggle("open");
-			if (panel.classList.contains("open")) {
-				if (pr.top - 12 - ph < 8) {
-					panel.style.top = (pr.bottom + 12) + "px";
-					panel.style.bottom = "auto";
-				} else {
-					panel.style.top = "auto";
-					panel.style.bottom = (window.innerHeight - pr.top + 12) + "px";
-				}
-			}
 		});
 		// 面板桌宠控制
 		var petTitle = document.createElement("div");
