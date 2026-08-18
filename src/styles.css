@@ -413,13 +413,13 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
 }
 
 /* ---------- whale desktop pet ---------- */
-/* 所有动画已归一化到 380x240 画布（鲸鱼统一高 200px） */
+/* 所有动画已归一化到 520x340 画布（鲸鱼统一高 280px，高分辨率更清晰） */
 .ds-pet {
   position: fixed;
   right: 24px;
   bottom: 130px;
-  width: 380px;
-  height: 240px;
+  width: 520px;
+  height: 340px;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;

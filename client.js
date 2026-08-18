@@ -428,13 +428,13 @@ body[data-ds-dark-theme] .ds-bg-layer[data-mode="wallpaper"] {
 }
 
 /* ---------- whale desktop pet ---------- */
-/* 所有动画已归一化到 380x240 画布（鲸鱼统一高 200px） */
+/* 所有动画已归一化到 520x340 画布（鲸鱼统一高 280px，高分辨率更清晰） */
 .ds-pet {
   position: fixed;
   right: 24px;
   bottom: 130px;
-  width: 380px;
-  height: 240px;
+  width: 520px;
+  height: 340px;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;
@@ -670,8 +670,8 @@ body[data-ds-dark-theme] [data-composer-seat] {
 			if (walkTimer) { clearInterval(walkTimer); walkTimer = null; }
 		}
 		function rand(a, b) { return a + Math.random() * (b - a); }
-		function petDefaultX() { return Math.max(4, window.innerWidth - 404); }
-		function petDefaultY() { return Math.max(4, window.innerHeight - 250); }
+		function petDefaultX() { return Math.max(4, window.innerWidth - 524); }
+		function petDefaultY() { return Math.max(4, window.innerHeight - 344); }
 		function applyPet() {
 			var tog = document.querySelector(".ds-crystal-pettoggle");
 			if (tog) tog.textContent = petState.enabled ? "✅ 桌宠开" : "⛔ 桌宠关";
@@ -697,31 +697,43 @@ body[data-ds-dark-theme] [data-composer-seat] {
 			var pbs = document.querySelectorAll(".ds-crystal-petbtn");
 			for (var pi = 0; pi < pbs.length; pi++) pbs[pi].classList.toggle("active", pbs[pi].dataset.anim === petState.anim);
 		}
-		// ---- 状态机：idle -> 随机散步 -> idle -> 久置入睡 ----
+		// ---- 状态机：idle -> 加权随机动作（散步/舞蹈/挥手/吃东西/踢/惩罚）-> 无操作 90s 入睡 ----
+		// 频率：walk 42% / dance 10% / wave 9% / eat 9% / kick 7% / punish 5% / 继续 idle 18%（每次 idle 间隔 4-10s）
 		function petGotoIdle() {
 			clearPetTimers();
 			setPetAnim("idle");
-			petTimers.push(setTimeout(petMaybeWalk, rand(6000, 14000)));
-			petTimers.push(setTimeout(petGoSleep, 60000));
+			petTimers.push(setTimeout(petPickNext, rand(4000, 10000)));
 		}
 		function setPetAnim(anim) {
 			petState.anim = anim;
 			applyPet();
 			persistPet();
 		}
+		function petPickNext() {
+			if (!petState.enabled || petState.anim === "sleep") return;
+			var r = Math.random();
+			if (r < 0.42) petMaybeWalk();
+			else if (r < 0.52) petPlayOnce("dance");
+			else if (r < 0.61) petPlayOnce("wave");
+			else if (r < 0.70) petPlayOnce("eat");
+			else if (r < 0.77) petPlayOnce("kick");
+			else if (r < 0.82) petPlayOnce("punish");
+			else petGotoIdle();
+		}
 		function petMaybeWalk() {
 			if (!petState.enabled || petState.anim === "sleep") return;
+			clearPetTimers();
 			petState.dir = Math.random() < 0.5 ? "l" : "r";
 			setPetAnim("walk");
 			walkTimer = setInterval(petWalkStep, 66);
-			petTimers.push(setTimeout(petStopWalk, rand(2500, 6000)));
+			petTimers.push(setTimeout(petStopWalk, rand(3000, 6000)));
 		}
 		function petWalkStep() {
 			if (!petState.enabled || petState.anim !== "walk") { if (walkTimer) { clearInterval(walkTimer); walkTimer = null; } return; }
 			if (petState.x === null) petState.x = petDefaultX();
 			var speed = 2.2;
 			var nx = petState.x + (petState.dir === "r" ? speed : -speed);
-			var maxX = Math.max(4, window.innerWidth - 384);
+			var maxX = Math.max(4, window.innerWidth - 524);
 			if (nx <= 4) { nx = 4; petState.dir = "r"; applyPet(); }
 			else if (nx >= maxX) { nx = maxX; petState.dir = "l"; applyPet(); }
 			petState.x = nx;
@@ -729,18 +741,28 @@ body[data-ds-dark-theme] [data-composer-seat] {
 			persistPet();
 		}
 		function petStopWalk() { if (petState.anim === "walk") petGotoIdle(); }
+		// 无操作 90 秒入睡；任何交互都会重置计时并唤醒
+		var inactivityTimer = null;
+		function petResetInactivity() {
+			if (inactivityTimer) clearTimeout(inactivityTimer);
+			inactivityTimer = setTimeout(petGoSleep, 90000);
+		}
 		function petGoSleep() {
-			if (!petState.enabled || petState.anim !== "idle") return;
+			if (!petState.enabled) return;
 			clearPetTimers();
+			if (walkTimer) { clearInterval(walkTimer); walkTimer = null; }
 			setPetAnim("sleep");
 		}
-		function petWake() { if (petState.anim === "sleep") petGotoIdle(); }
+		function petWake() {
+			petResetInactivity();
+			if (petState.anim === "sleep") petGotoIdle();
+		}
 		function petPlayOnce(anim) {
 			clearPetTimers();
 			petState.anim = anim;
 			applyPet();
 			persistPet();
-			petTimers.push(setTimeout(petGotoIdle, anim === "dance" || anim === "punish" ? 5000 : 4000));
+			petTimers.push(setTimeout(petGotoIdle, anim === "dance" || anim === "punish" ? 5500 : 4200));
 		}
 		// drag（点击醒睡 + 开面板）
 		var petDrag = false;
@@ -757,8 +779,8 @@ body[data-ds-dark-theme] [data-composer-seat] {
 			if (pet._sx === undefined) return;
 			var nx = e.clientX - pet._dx;
 			var ny = e.clientY - pet._dy;
-			nx = Math.max(4, Math.min(nx, window.innerWidth - 384));
-			ny = Math.max(4, Math.min(ny, window.innerHeight - 244));
+			nx = Math.max(4, Math.min(nx, window.innerWidth - 524));
+			ny = Math.max(4, Math.min(ny, window.innerHeight - 344));
 			pet.style.left = nx + "px";
 			pet.style.top = ny + "px";
 		});
@@ -804,6 +826,7 @@ body[data-ds-dark-theme] [data-composer-seat] {
 			b.textContent = s;
 			b.addEventListener("click", function () {
 				petState.enabled = true;
+				petResetInactivity();
 				if (s === "walk") petMaybeWalk();
 				else if (s === "sleep") { clearPetTimers(); setPetAnim("sleep"); }
 				else if (s === "idle") petGotoIdle();
@@ -817,7 +840,7 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		petToggle.addEventListener("click", function () {
 			petState.enabled = !petState.enabled;
 			clearPetTimers();
-			if (petState.enabled) petGotoIdle();
+			if (petState.enabled) { petGotoIdle(); petResetInactivity(); }
 			persistPet();
 			applyPet();
 		});
@@ -841,7 +864,7 @@ body[data-ds-dark-theme] [data-composer-seat] {
 		document.body.appendChild(ui);
 		// pet 初始化：等 ui 挂载后再跑，确保 🎨 按钮/面板控件可被查到
 		applyPet();
-		if (petState.enabled) petGotoIdle();
+		if (petState.enabled) { petGotoIdle(); petResetInactivity(); }
 		// restore saved position
 		try {
 			var pos = JSON.parse(localStorage.getItem("ds-crystal-pos") || "null");
